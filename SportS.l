@@ -1,22 +1,23 @@
 %{
-#include "sportscript.tab.h" // Ensure this header is correct for your parser definitions
+#include "SportS.tab.h" // Ensure this header is correct for your parser definitions
 %}
 
-%option noinput nounput noyywrap yylineno
+%option noyywrap
 
-// Define patterns for SportScript tokens
 STRATEGY "strategy"
 WHISTLE  "whistle"
 TIMEOUT  "timeout"
 ANNOUNCE "announce"
 ROUND    "round"
 MATCH    "match"
-ALTERNATE_PLAY "alternate play"
+ALTERNATE "alternate"
 PLAYER   "player"
 TEAM     "team"
-NUMBER   [0-9]+[a-z]+  // For unique number formats like 100pt, 5sec
-ID       [a-zA-Z_]+    // Identifiers can include uppercase characters for SportScript
-STRING   \'[^\']*\'    // Single quotes for string literals
+SCORES   "scores"
+
+NUMBER   [0-9]+[a-z]+
+ID       [a-zA-Z_]+
+STRING   \'[^\']*\'
 
 %%
 
@@ -26,13 +27,15 @@ STRING   \'[^\']*\'    // Single quotes for string literals
 {ANNOUNCE}       { return ANNOUNCE; }
 {ROUND}          { return ROUND; }
 {MATCH}          { return MATCH; }
-{ALTERNATE_PLAY} { return ALTERNATE_PLAY; }
+{ALTERNATE} { return ALTERNATE; }
 {PLAYER}         { return PLAYER; }
 {TEAM}           { return TEAM; }
-{NUMBER}         { yylval.num = strdup(yytext); return NUMBER; }
-{ID}             { yylval.id = strdup(yytext); return ID; }
-{STRING}         { yylval.str = strdup(yytext+1); yylval.str[strlen(yylval.str)-1] = 0; return STRING; }
+{SCORES}         { return SCORES; }
+
+{NUMBER}         { return NUMBER; }
+{ID}             { return ID; }
+{STRING}         { return STRING; }
 [ \t\n]+         // Skip whitespace
-.                { return yytext[0]; }  // Catch all for single characters
+.                { return yytext[0]; }
 
 %%
