@@ -5,7 +5,7 @@ TARGETS=SportS
 
 all: clean $(TARGETS)
 
-%: %.lex.o %.tab.o $(OBJS) vm3/libvm3.a
+%: %.lex.o %.tab.o $(OBJS) vm/libvm3.a
 	$(CC) -o $@ $^
 
 %.tab.o: %.tab.c %.tab.h
@@ -25,8 +25,8 @@ vm3/libvm3.a:
 
 clean:
 	make -C vm clean
-	rm -f *.lex.* *.tab.* *.o $(TARGETS) *.vm3
+	rm -f *.lex.* *.tab.* *.o $(TARGETS) *.vm
 
-.PHONY: vm3/libvm3.a
+.PHONY: vm/libvm3.a
 
 .PRECIOUS: SportS.tab.h
