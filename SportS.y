@@ -14,10 +14,10 @@ typedef struct astnode{
     union {
         int num;
         char* str;
-    }; //v; for what?
+    }v; //for what?
     struct astnode *child[10]; //change max number of children as needed
 } astnode_t;
-astnode_t* node(int type);
+astnode_t* create_node(int type);
 
 int compile_ast(astnode_t* root);
 
@@ -32,63 +32,103 @@ int compile_ast(astnode_t* root);
     // Add other types as needed
 }
 
-%type <ast> program statement num id str //add more types as needed
+%type <ast> program statement variable_declaration assignment function_declaration
+%type <ast> control_structure print_statement expression value function_call comment include
 
 %token <str> PLAYER SCORE SCORE_SCORE GOAL IN OUT
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
 %token <str> TRAINING PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTION
 %token <str> INBOUNDS OUTBOUNDS LEADS TRAILS LEADS_OR_TIES TRAILS_OR_TIES
-%token <str> SCORES LOSES MULTIPLIES DIVIDES ANDGOAL ORGOAL NOTGOAL REMAINDER
-%token <str> SETS QUICK_PLAY REFEREE INJURY
+%token <str> SCORES LOSES MULTIPLIES TACKLES ANDGOAL ORGOAL NOTGOAL REMAINDER
+%token <str> SETS QUICK_PLAY REFEREE INJURY USING
 %token <num> NUMBER
-%token ID
+%token <str> ID COACH BUY DATATYPE IS STRING
 
-//define left and right associativity as well as precedence
+// Define operator precedence and associativity here (TODO: is this right?)
+%left ANDGOAL ORGOAL
+%left SCORES LOSES
+%left MULTIPLIES TACKLES
+%left INBOUNDS OUTBOUNDS LEADS TRAILS LEADS_OR_TIES TRAILS_OR_TIES
 
-%start program
+%start start
 
 %%
+//TODO: include break (TIMEOUT) and continue (SUBSTITUTION) statements
+
+start:
+    program { compile_ast($1); }
+
 
 program:
-    | program statement
-    ;
+    | program statement { $$ = create_node(program); $$->child[0] = $1; $$->child[1] = $2; }
+
 
 statement:
       variable_declaration
+    | assignment
     | function_declaration
-    | assignment_statement
     | control_structure
     | print_statement
-    ;
+    | function_call
+    | include //should i even support this?
+    | comment
+    //TODO get input from user
+
+comment:
+    COACH { $$ = create_node(/* params */); }
+
+include:
+    BUY '@' STRING
 
 variable_declaration:
-      PLAYER ID SETS expression END_WHISTLE { $$ = create_node(/* params */); }
+      datatype ID  //add ID to global variables
+
+assignment:
+      datatype ID IS value
+      | ID IS value
+
+datatype:
+      PLAYER
+    | SCORE
+    | GOAL
     ;
 
 function_declaration:
-      STRATEGY USING '(' parameter_list ')' START_WHISTLE statements END_WHISTLE { $$ = create_node(/* params */); }
-    ;
+      STRATEGY ID USING '|' parameter_list '|' START_WHISTLE program RESULT END_WHISTLE { $$ = create_node(/* params */); }
 
-assignment_statement:
-      ID SETS expression END_WHISTLE { $$ = create_node(/* params */); }
-    ;
+function_call:
+        PLAY ID USING '|' argument_list '|' { $$ = create_node(/* params */); }
 
 control_structure:
-      WIN '(' expression ')' START_WHISTLE statements END_WHISTLE { $$ = create_node(/* params */); }
-    | TRAINING '(' expression ')' START_WHISTLE statements END_WHISTLE { $$ = create_node(/* params */); }
-    | PRACTICE '(' assignment_statement expression ';' expression ')' START_WHISTLE statements END_WHISTLE { $$ = create_node(/* params */); }
-    ;
+      WIN  expression  START_WHISTLE program END_WHISTLE { $$ = create_node(/* params */); }
+    | TRAINING  expression  START_WHISTLE program END_WHISTLE { $$ = create_node(/* params */); }
 
 print_statement:
-      ANNOUNCE expression END_WHISTLE { $$ = create_node(/* params */); }
-    ;
+      ANNOUNCE value END_WHISTLE { $$ = create_node(/* params */); }
 
 expression:
+      value ANDGOAL value { $$ = create_node(/* params */); }
+    | value ORGOAL value { $$ = create_node(/* params */); }
+    | value NOTGOAL value { $$ = create_node(/* params */); }
+    | value REMAINDER value { $$ = create_node(/* params */); }
+    | value SCORES value { $$ = create_node(/* params */); }
+    | value LOSES value { $$ = create_node(/* params */); }
+    | value MULTIPLIES value { $$ = create_node(/* params */); } //TODO other keyword for MULTIPLIES!
+    | value TACKLES value { $$ = create_node(/* params */); }
+    | value INBOUNDS value { $$ = create_node(/* params */); }
+    | value OUTBOUNDS value { $$ = create_node(/* params */); }
+    | value LEADS value { $$ = create_node(/* params */); }
+    | value TRAILS value { $$ = create_node(/* params */); }
+    | value LEADS_OR_TIES value { $$ = create_node(/* params */); }
+    | value TRAILS_OR_TIES value { $$ = create_node(/* params */); }
+    | value IS value { $$ = create_node(/* params */); }
+    //TODO: finish expression
+
+value:
       NUMBER { $$ = create_node(/* params */); }
+    | STRING { $$ = create_node(/* params */); }
     | ID { $$ = create_node(/* params */); }
-    | expression SCORES expression { $$ = create_node(/* params */); }
-    // Add other expressions and operators
-    ;
+
 
 %%
 
