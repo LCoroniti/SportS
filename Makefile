@@ -28,6 +28,5 @@ clean:
 	make -C vm clean
 	rm -f *.lex.* *.tab.* *.o $(TARGETS) *.vm
 
-.PHONY: vm/libvm3.a
 
 .PRECIOUS: SportS.tab.h

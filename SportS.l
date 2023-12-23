@@ -2,26 +2,21 @@
 #include "SportS.tab.h" // Ensure this header is correct for your parser definitions
 %}
 
-%{
-#include "your_parser_header.h" // Replace with the actual name of your Bison parser header file
-%}
-
 %option noinput nounput noyywrap yylineno
 
 PLAYER           "player"
 SCORE            "score"
-SCORE_SCORE      "score:score"
 GOAL             "goal"
 IN               "in"
 OUT              "out"
-START_WHISTLE    "start whistle"
-END_WHISTLE      "end whistle"
+START_WHISTLE    "{"
+END_WHISTLE      "}"
 STRATEGY         "strategy"
 PLAY             "play"
 WIN              "win"
 TIE              "tie"
 LOSE             "lose"
-TRAINING         "training"
+PENALTY_SHOOTOUT "penalty shootout"
 PRACTICE         "practice"
 ANNOUNCE         "announce"
 RESULT           "result"
@@ -55,7 +50,6 @@ STRING           \<[^\>]*\>
 
 {PLAYER}           { return PLAYER; }
 {SCORE}            { return SCORE; }
-{SCORE_SCORE}      { return SCORE_SCORE; }
 {GOAL}             { return GOAL; }
 {IN}               { return IN; }
 {OUT}              { return OUT; }
@@ -66,7 +60,7 @@ STRING           \<[^\>]*\>
 {WIN}              { return WIN; }
 {TIE}              { return TIE; }
 {LOSE}             { return LOSE; }
-{TRAINING}         { return TRAINING; }
+{PENALTY_SHOOTOUT}         { return PENALTY_SHOOTOUT; }
 {PRACTICE}         { return PRACTICE; }
 {ANNOUNCE}         { return ANNOUNCE; }
 {RESULT}           { return RESULT; }
