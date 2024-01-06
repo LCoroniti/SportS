@@ -1,0 +1,26 @@
+
+
+STRATEGY print USING | var |
+START_WHISTLE
+    WIN var INBOUNDS 0
+    START_WHISTLE
+            ANNOUNCE | <win> |
+    END_WHISTLE
+    TIE var INBOUNDS 1
+    START_WHISTLE
+            ANNOUNCE | <tie> |
+    END_WHISTLE
+    LOSE
+    START_WHISTLE
+            ANNOUNCE | <lose> |
+    END_WHISTLE
+    ANNOUNCE | var |
+    SCORE num IS 6
+    ANNOUNCE | num |
+RESULT
+END_WHISTLE
+
+
+PLAY print USING | 3 |
+
+

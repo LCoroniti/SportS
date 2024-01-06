@@ -1,0 +1,25 @@
+
+
+STRATEGY hailstone USING | number |
+START_WHISTLE
+    SCORE stepCount IS 0
+    PENALTY_SHOOTOUT number OUTBOUNDS 1
+    START_WHISTLE
+        ANNOUNCE | number |
+        WIN number REMAINDER 2 INBOUNDS 0
+        START_WHISTLE
+            number IS number TACKLES 2
+        END_WHISTLE
+        LOSE
+        START_WHISTLE
+            number IS number MULTIPLIES 3
+            number IS number SCORES 1
+        END_WHISTLE
+        stepCount IS stepCount SCORES 1
+    END_WHISTLE
+    ANNOUNCE | number |
+    ANNOUNCE | <Step Count: > stepCount |
+RESULT
+END_WHISTLE
+
+PLAY hailstone USING | 20 |

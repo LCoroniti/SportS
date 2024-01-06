@@ -1,38 +1,110 @@
 %{
-#include "sportscript.tab.h" // Ensure this header is correct for your parser definitions
+#include "SportS.tab.h" // Ensure this header is correct for your parser definitions
 %}
 
 %option noinput nounput noyywrap yylineno
 
-// Define patterns for SportScript tokens
-STRATEGY "strategy"
-WHISTLE  "whistle"
-TIMEOUT  "timeout"
-ANNOUNCE "announce"
-ROUND    "round"
-MATCH    "match"
-ALTERNATE_PLAY "alternate play"
-PLAYER   "player"
-TEAM     "team"
-NUMBER   [0-9]+[a-z]+  // For unique number formats like 100pt, 5sec
-ID       [a-zA-Z_]+    // Identifiers can include uppercase characters for SportScript
-STRING   \'[^\']*\'    // Single quotes for string literals
+PLAYER           "PLAYER"
+SCORE            "SCORE"
+GOAL             "GOAL"
+TEAM             "TEAM"
+IN               "IN"
+OUT              "OUT"
+IS               "IS"
+START_WHISTLE    "START_WHISTLE"
+END_WHISTLE      "END_WHISTLE"
+STRATEGY         "STRATEGY"
+PLAY             "PLAY"
+WIN              "WIN"
+TIE              "TIE"
+LOSE             "LOSE"
+PENALTY_SHOOTOUT "PENALTY_SHOOTOUT"
+PRACTICE         "PRACTICE"
+ANNOUNCE         "ANNOUNCE"
+RESULT           "RESULT"
+TIMEOUT          "TIMEOUT"
+SUBSTITUTION     "SUBSTITUTION"
+INBOUNDS         "INBOUNDS"
+OUTBOUNDS        "OUTBOUNDS"
+LEADS            "LEADS"
+TRAILS           "TRAILS"
+LEADS_OR_TIES    "LEADS_OR_TIES"
+TRAILS_OR_TIES   "TRAILS_OR_TIES"
+SCORES           "SCORES"
+LOSES            "LOSES"
+MULTIPLIES       "MULTIPLIES"
+TACKLES          "TACKLES"
+ANDGOAL          "AND_GOAL"
+ORGOAL           "OR_GOAL"
+NOTGOAL          "NOT_GOAL"
+REMAINDER        "REMAINDER"
+SETS             "SETS"
+QUICK_PLAY       "QUICK_PLAY"
+REFEREE          "REFEREE"
+INJURY           "INJURY"
+USING            "USING"
+COACH            "COACH#" ~('\r' | '\n' | '\\')*
+BUY              "BUY"
+NUMBER           [0-9]+
+ID               [a-zA-Z_][a-zA-Z0-9_]*
+STRING           \<[^\>]*\>
 
 %%
 
-{STRATEGY}       { return STRATEGY; }
-{WHISTLE}        { return WHISTLE; }
-{TIMEOUT}        { return TIMEOUT; }
-{ANNOUNCE}       { return ANNOUNCE; }
-{ROUND}          { return ROUND; }
-{MATCH}          { return MATCH; }
-{ALTERNATE_PLAY} { return ALTERNATE_PLAY; }
-{PLAYER}         { return PLAYER; }
-{TEAM}           { return TEAM; }
-{NUMBER}         { yylval.num = strdup(yytext); return NUMBER; }
-{ID}             { yylval.id = strdup(yytext); return ID; }
-{STRING}         { yylval.str = strdup(yytext+1); yylval.str[strlen(yylval.str)-1] = 0; return STRING; }
-[ \t\n]+         // Skip whitespace
-.                { return yytext[0]; }  // Catch all for single characters
+{PLAYER}           { return PLAYER; }
+{SCORE}            { return SCORE; }
+{GOAL}             { return GOAL; }
+{TEAM}             { return TEAM; }
+{IN}               { return IN; }
+{OUT}              { return OUT; }
+{IS}               { return IS; }
+{START_WHISTLE}    { return START_WHISTLE; }
+{END_WHISTLE}      { return END_WHISTLE; }
+{STRATEGY}         { return STRATEGY; }
+{PLAY}             { return PLAY; }
+{WIN}              { return WIN; }
+{TIE}              { return TIE; }
+{LOSE}             { return LOSE; }
+{PENALTY_SHOOTOUT} { return PENALTY_SHOOTOUT; }
+{PRACTICE}         { return PRACTICE; }
+{ANNOUNCE}         { return ANNOUNCE; }
+{RESULT}           { return RESULT; }
+{TIMEOUT}          { return TIMEOUT; }
+{SUBSTITUTION}     { return SUBSTITUTION; }
+{INBOUNDS}         { return INBOUNDS; }
+{OUTBOUNDS}        { return OUTBOUNDS; }
+{LEADS}            { return LEADS; }
+{TRAILS}           { return TRAILS; }
+{LEADS_OR_TIES}    { return LEADS_OR_TIES; }
+{TRAILS_OR_TIES}   { return TRAILS_OR_TIES; }
+{SCORES}           { return SCORES; }
+{LOSES}            { return LOSES; }
+{MULTIPLIES}       { return MULTIPLIES; }
+{TACKLES}          { return TACKLES; }
+{ANDGOAL}          { return ANDGOAL; }
+{ORGOAL}           { return ORGOAL; }
+{NOTGOAL}          { return NOTGOAL; }
+{REMAINDER}        { return REMAINDER; }
+{SETS}             { return SETS; }
+{QUICK_PLAY}       { return QUICK_PLAY; }
+{REFEREE}          { return REFEREE; }
+{INJURY}           { return INJURY; }
+{BUY}              { return BUY; }
+{USING}            { return USING; }
+
+{NUMBER}           { yylval.num = atoi(yytext); return NUMBER; }
+{STRING}           {
+                       int len = strlen(yytext) - 2; // Length of the string without quotes
+                       yylval.str = malloc(len + 1); // Allocate memory for the new string (+1 for null terminator)
+                       strncpy(yylval.str, yytext + 1, len); // Copy the string without the first and last character
+                       yylval.str[len] = '\0'; // Null-terminate the string
+                       return STRING;
+                   }
+{ID}               { yylval.id = strdup(yytext); return ID; }
+(\ |\n|\r|\t)
+.                  { return yytext[0]; }
+
+
 
 %%
+

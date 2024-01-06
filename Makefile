@@ -1,3 +1,4 @@
+
 CC=gcc
 CFLAGS=-ggdb -Wall -Ivm --std=gnu11
 OBJS=
@@ -18,9 +19,9 @@ all: clean $(TARGETS)
 	bison --defines -t $^
 
 %.lex.c: %.l
-	flex -o $@ $^
+	flex -d -o $@ $^
 
-vm3/libvm3.a:
+vm/libvm3.a:
 	make -C vm
 
 clean:

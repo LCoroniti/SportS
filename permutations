@@ -1,0 +1,37 @@
+STRATEGY Permute USING | list startIndex endIndex |
+START_WHISTLE
+    WIN startIndex INBOUNDS endIndex
+    START_WHISTLE
+        ANNOUNCE | list |
+    END_WHISTLE
+    LOSE
+    START_WHISTLE
+        SCORE i IS startIndex
+        PENALTY_SHOOTOUT i TRAILS endIndex
+        START_WHISTLE
+            SWAP list AT startIndex WITH i
+            PLAY Permute USING | list startIndex SCORES 1 endIndex |
+            SWAP list AT startIndex WITH i // backtrack
+        END_WHISTLE
+    END_WHISTLE
+END_WHISTLE
+
+STRATEGY PrintPermutations USING | list |
+START_WHISTLE
+    PLAY Permute USING | list 0 count |
+END_WHISTLE
+
+STRATEGY MainProgram USING | |
+START_WHISTLE
+    ANNOUNCE | <How many numbers do you want to enter?> |
+    SCORE amount IS getint()
+    PENALTY_SHOOTOUT i TRAILS amount
+    START_WHISTLE
+        ANNOUNCE | <Enter number> |
+        SCORE number IS getint()
+        SCORE numberList i IS number
+    END_WHISTLE
+    PLAY PrintPermutations USING | numberList |
+END_WHISTLE
+
+PLAY MainProgram USING | |

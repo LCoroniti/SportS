@@ -1,0 +1,87 @@
+
+STRATEGY RandomOperator USING | |
+START_WHISTLE
+    PLAYER operator IS PLAY random USING | 4 |
+    WIN operator INBOUNDS 0
+    START_WHISTLE
+        operator IS <SCORES>
+    END_WHISTLE
+    TIE operator INBOUNDS 1
+    START_WHISTLE
+        operator IS <LOSES>
+    END_WHISTLE
+    TIE operator INBOUNDS 2
+    START_WHISTLE
+        operator IS <MULTIPLIES>
+    END_WHISTLE
+    TIE operator INBOUNDS 3
+    START_WHISTLE
+        operator IS <TACKLES>
+    END_WHISTLE
+RESULT operator
+END_WHISTLE
+
+STRATEGY GenerateArithmeticTerm USING | termLength maxNumber|
+START_WHISTLE
+    TEAM term IS | PLAY random USING | 10 | |
+    ANNOUNCE | <Term: > term |
+    PLAYER i IS 1
+    PENALTY_SHOOTOUT i TRAILS termLength
+    START_WHISTLE
+        PLAYER operator IS PLAY RandomOperator USING | |
+        term # i IS operator
+        ANNOUNCE | <Term: > term |
+
+        PLAYER number IS PLAY random USING | 10 |
+        term # i SCORES 1 IS number
+        ANNOUNCE | <Term: > term |
+
+        i IS i SCORES 1
+    END_WHISTLE
+    ANNOUNCE | <Term: > term |
+RESULT term
+END_WHISTLE
+
+STRATEGY ValidateAnswer USING | string userAnswer string correctAnswer |
+START_WHISTLE
+    WIN userAnswer INBOUNDS correctAnswer
+    START_WHISTLE
+        ANNOUNCE | <Correct!> |
+    END_WHISTLE
+    LOSE
+    START_WHISTLE
+        ANNOUNCE | <Wrong!> |
+    END_WHISTLE
+RESULT
+END_WHISTLE
+
+STRATEGY calculate USING | arithmeticTerm |
+START_WHISTLE
+    SCORE result IS 0
+
+RESULT result
+END_WHISTLE
+
+STRATEGY MainGame USING | termLength maxNumber |
+START_WHISTLE
+    PLAYER arithmeticTerm IS PLAY GenerateArithmeticTerm USING | termLength |
+    ANNOUNCE | <Solve this term: > arithmeticTerm |
+    PLAYER userGuess IS PLAY GET_USER_INPUT USING | |
+    PLAYER correctAnswer IS PLAY calculate USING |arithmeticTerm |
+    GOAL result IS PLAY ValidateAnswer USING | userGuess correctAnswer |
+
+    ANNOUNCE | <Do you want to try another one? (IN/OUT)> |
+    PLAYER userChoice IS PLAY GET_USER_INPUT USING | |
+    WIN userChoice INBOUNDS <IN>
+    START_WHISTLE
+        ANNOUNCE | <Let's go!> |
+        PLAY MainGame USING | termLength |
+    END_WHISTLE
+    LOSE
+    START_WHISTLE
+        ANNOUNCE | <Thanks for playing!> |
+    END_WHISTLE
+RESULT
+END_WHISTLE
+
+PLAY MainGame USING | 2 10 |
