@@ -9,8 +9,16 @@ NATIVE(myadd) {
   return val_add(v1, v2);
 }
 
+NATIVE(SIZE) {
+    val_t *v = ARG(0);
+    int len = val_len(v);
+    return v_num_new_int(len);
+}
+
 OPCODE(mymul) {
   val_t *v1 = POP;
   val_t *v2 = POP;
   PUSH(val_mul(v1, v2));
 }
+
+

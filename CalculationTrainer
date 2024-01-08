@@ -23,9 +23,10 @@ END_WHISTLE
 
 STRATEGY GenerateArithmeticTerm USING | termLength maxNumber|
 START_WHISTLE
-    TEAM term IS | PLAY random USING | 10 | |
+    SCORE rand IS PLAY random USING | 10 |
+    TEAM term IS | rand |
     ANNOUNCE | <Term: > term |
-    PLAYER i IS 1
+    SCORE i IS 1
     PENALTY_SHOOTOUT i TRAILS termLength
     START_WHISTLE
         PLAYER operator IS PLAY RandomOperator USING | |
@@ -42,23 +43,33 @@ START_WHISTLE
 RESULT term
 END_WHISTLE
 
-STRATEGY ValidateAnswer USING | string userAnswer string correctAnswer |
-START_WHISTLE
-    WIN userAnswer INBOUNDS correctAnswer
-    START_WHISTLE
-        ANNOUNCE | <Correct!> |
-    END_WHISTLE
-    LOSE
-    START_WHISTLE
-        ANNOUNCE | <Wrong!> |
-    END_WHISTLE
-RESULT
-END_WHISTLE
-
 STRATEGY calculate USING | arithmeticTerm |
 START_WHISTLE
-    SCORE result IS 0
-
+    SCORE teamSize IS PLAY SIZE USING | arithmeticTerm |
+    SCORE result IS arithmeticTerm # 0
+    SCORE i IS 1
+    PENALTY_SHOOTOUT i TRAILS teamSize
+    START_WHISTLE
+        PLAYER operator IS arithmeticTerm # i
+        SCORE number IS arithmeticTerm # i SCORES 1
+        WIN operator INBOUNDS <SCORES>
+        START_WHISTLE
+            result IS result SCORES number
+        END_WHISTLE
+        TIE operator INBOUNDS <LOSES>
+        START_WHISTLE
+            result IS result LOSES number
+        END_WHISTLE
+        TIE operator INBOUNDS <MULTIPLIES>
+        START_WHISTLE
+            result IS result MULTIPLIES number
+        END_WHISTLE
+        TIE operator INBOUNDS <TACKLES>
+        START_WHISTLE
+            result IS result TACKLES number
+        END_WHISTLE
+        i IS i SCORES 2
+    END_WHISTLE
 RESULT result
 END_WHISTLE
 
@@ -66,12 +77,20 @@ STRATEGY MainGame USING | termLength maxNumber |
 START_WHISTLE
     PLAYER arithmeticTerm IS PLAY GenerateArithmeticTerm USING | termLength |
     ANNOUNCE | <Solve this term: > arithmeticTerm |
-    PLAYER userGuess IS PLAY GET_USER_INPUT USING | |
+    PLAYER userGuess IS PLAY getint USING | |
     PLAYER correctAnswer IS PLAY calculate USING |arithmeticTerm |
-    GOAL result IS PLAY ValidateAnswer USING | userGuess correctAnswer |
+    GOAL correct IS correctAnswer INBOUNDS userGuess
+    WIN correct
+    START_WHISTLE
+        ANNOUNCE | <Correct!> |
+    END_WHISTLE
+    LOSE
+    START_WHISTLE
+        ANNOUNCE | <Wrong! The correct answer is: > correctAnswer |
+    END_WHISTLE
 
     ANNOUNCE | <Do you want to try another one? (IN/OUT)> |
-    PLAYER userChoice IS PLAY GET_USER_INPUT USING | |
+    PLAYER userChoice IS PLAY getstring USING | |
     WIN userChoice INBOUNDS <IN>
     START_WHISTLE
         ANNOUNCE | <Let's go!> |

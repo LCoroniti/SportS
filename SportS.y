@@ -47,7 +47,7 @@ void print_ast(astnode_t* node, int level);
 %type <ast> condition tie_or_lose_branch parameter_def parameter_call expression_list
 %type <ast> player score goal float datatype number string id boolean team_member
 
-%token <str> function val param_def param_call assign_member
+%token <str> function val param_def param_call assign_member array_is get_member
 %token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
 %token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTION
@@ -99,11 +99,11 @@ statement:
 variable_declaration:
       datatype id { $$ = create_node(ID); $$->child[1] = $2; } //TODO: change
 
-assignment:
-      datatype id IS expression { $$ = create_node(IS); $$->child[1] = $2; $$->child[2] = $4;}
-      | id IS expression { $$ = create_node(IS); $$->child[1] = $1; $$->child[2] = $3;}
-      | TEAM id IS '|' expression_list '|' { $$ = create_node(IS); $$->child[1] = $2; $$->child[2] = $5; }
-      | id IS '|' expression_list '|' { $$ = create_node(IS); $$->child[1] = $1; $$->child[2] = $4; }
+assignment: //TODO: if assigned with eg INBOUNDS (condition) -> maybe put expression and conditon to one rule?
+      datatype id IS condition { $$ = create_node(IS); $$->child[1] = $2; $$->child[2] = $4;}
+      | id IS condition { $$ = create_node(IS); $$->child[1] = $1; $$->child[2] = $3;}
+      | TEAM id IS '|' expression_list '|' { $$ = create_node(array_is); $$->child[1] = $2; $$->child[2] = $5; }
+      | id IS '|' parameter_call '|' { $$ = create_node(array_is); $$->child[1] = $1; $$->child[2] = $4; }
       | id '#' expression IS expression { $$ = create_node(assign_member); $$->child[0] = $1; $$->child[1] = $3; $$->child[2] = $5; }
 
 
@@ -115,7 +115,7 @@ datatype: //TODO: set datatype as a child so i can use it in my compiler
 
 function_declaration:
       STRATEGY id USING '|' parameter_def '|' START_WHISTLE program RESULT expression END_WHISTLE
-      { $$ = create_node(function); $$->child[0] = $2; $$->child[1] = $5; $$->child[2] = $8; }
+      { $$ = create_node(function); $$->child[0] = $2; $$->child[1] = $5; $$->child[2] = $8; $$->child[3] = $10;}
 
 parameter_def:
       parameter_def id { $$ = create_node(param_def); $$->child[0] = $1; $$->child[1] = $2; }
@@ -125,7 +125,7 @@ parameter_def:
 function_call:
       PLAY id USING '|' parameter_call '|' { $$ = create_node(PLAY); $$->child[0] = $2; $$->child[1] = $5; }
 
-parameter_call:
+parameter_call: //TODO: or make it an expression list?
       parameter_call statement { $$ = create_node(param_call); $$->child[0] = $1; $$->child[1] = $2; }
     | statement { $$ = create_node(param_call); $$->child[0] = NULL; $$->child[1] = $1; }
     | %empty { $$ = NULL; }
@@ -150,6 +150,7 @@ condition:
     | expression TRAILS expression { $$ = create_node(TRAILS); $$->child[0] = $1; $$->child[1] = $3; }
     | expression LEADS_OR_TIES expression { $$ = create_node(LEADS_OR_TIES); $$->child[0] = $1; $$->child[1] = $3; }
     | expression TRAILS_OR_TIES expression { $$ = create_node(TRAILS_OR_TIES); $$->child[0] = $1; $$->child[1] = $3; }
+    | expression
 
 
 print_statement:
@@ -158,7 +159,6 @@ print_statement:
 expression_list:
       expression_list expression { $$ = create_node(val); $$->child[0] = $1; $$->child[1] = $2; }
     | expression { $$ = create_node(val); $$->child[0] = NULL; $$->child[1] = $1; }
-    | %empty { $$ = NULL; }
 
 expression:
      value REMAINDER expression { $$ = create_node(REMAINDER); $$->child[0] = $1; $$->child[1] = $3; }
@@ -168,6 +168,7 @@ expression:
     | value TACKLES expression { $$ = create_node(TACKLES); $$->child[0] = $1; $$->child[1] = $3; }
     | value //{ $$ = create_node(val); $$->child[0] = $1; }
     | function_call //{ $$ = create_node(PLAY); $$->child[0] = $1; }
+    | id '#' expression { $$ = create_node(get_member); $$->child[0] = $1; $$->child[1] = $3; }
     | %empty { $$ = NULL; }
 
 
@@ -244,7 +245,9 @@ const char* get_node_type_name(int type) {
         case param_call: return "parameter_call";
         case val: return "value";
         case IS: return "IS";
+        case array_is: return "array_is";
         case assign_member: return "assign_member";
+        case get_member: return "get_member";
         default: return "UNKNOWN";
     }
 }
@@ -344,6 +347,7 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[2]);
             //Q: where do I get the value of parameter variables
             //prog_add_num(p, 0);
+            compile_ast(root->child[3]);
             prog_add_op(p, RET);
             prog_set_num(p, jmp, prog_next_pc(p));
             //prog_add_num(p, 0);
@@ -379,7 +383,20 @@ int compile_ast(astnode_t* root) {
             prog_add_num(p, v->nr);
             prog_add_op(p, SETVAR);
             prog_add_num(p, v->nr);
-            prog_add_op(p, GETVAR);
+            prog_add_op(p, GETVAR); //unnecessary?
+            break;
+        case array_is:
+            nrparams = 0;
+            if (root->child[2] != NULL) {
+                nrparams = compile_ast(root->child[2])+1;
+            }
+            prog_add_num(p, nrparams);
+            prog_add_op(p, MKARRAY);
+            v = var_get_or_addlocal(root->child[1]->val.id);
+            prog_add_num(p, v->nr);
+            prog_add_op(p, SETVAR);
+            prog_add_num(p, v->nr);
+            prog_add_op(p, GETVAR); //unnecessary?
             break;
         case assign_member:
             compile_ast(root->child[2]); //value (expression)
@@ -388,6 +405,11 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, INDEXAS);
             break;
 
+        case get_member:
+            compile_ast(root->child[1]); //number
+            compile_ast(root->child[0]); //id
+            prog_add_op(p, INDEX1);
+            break;
         case val:
             compile_ast(root->child[0]);
             compile_ast(root->child[1]);
@@ -419,7 +441,7 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[1]);
             prog_add_op(p, CONDBEGIN);
             compile_ast(root->child[2]);
-            prog_add_op(p, CONDEND);
+            prog_add_op(p, CONDEND); //try if working or CONDEND?
             break;
         case LOSE:
             compile_ast(root->child[0]);
@@ -468,6 +490,11 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[0]);
             prog_add_op(p, ADD);
             break;
+        case LOSES:
+            compile_ast(root->child[1]);
+            compile_ast(root->child[0]);
+            prog_add_op(p, SUB);
+            break;
         case ANNOUNCE:
             nrparams = 0;
             if (root->child[0] != NULL) {
@@ -509,7 +536,7 @@ int main(int argc, char **argv) {
     snprintf(bytecode, 1000, "%s.vm3", argv[1]);
     prog_write(p, bytecode);
     exec_t *e = exec_new(p);
-    exec_set_debuglvl(e, E_DEBUG2);
+    //exec_set_debuglvl(e, E_DEBUG2);
     exec_run(e);
 
     return st;
