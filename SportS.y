@@ -88,7 +88,7 @@ statement:
     | control_structure //{ $$ = create_node(CNTRL); $$->child[0] = $1; }
     | print_statement //{ $$ = create_node(ANNOUNCE); $$->child[0] = $1; }
     | function_call //{ $$ = create_node(PLAY); $$->child[0] = $1; }
-    | value
+    | condition
 //    | include //should I even support this?
     //TODO get input from user
 

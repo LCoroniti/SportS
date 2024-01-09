@@ -1,4 +1,4 @@
-
+//TODO: stack is always growing, resolve this
 STRATEGY RandomOperator USING | |
 START_WHISTLE
     PLAYER operator IS PLAY random USING | 4 |
@@ -33,8 +33,9 @@ START_WHISTLE
         term # i IS operator
         ANNOUNCE | <Term: > term |
 
+        i IS i SCORES 1
         PLAYER number IS PLAY random USING | 10 |
-        term # i SCORES 1 IS number
+        term # i IS number
         ANNOUNCE | <Term: > term |
 
         i IS i SCORES 1
@@ -52,6 +53,7 @@ START_WHISTLE
     START_WHISTLE
         PLAYER operator IS arithmeticTerm # i
         SCORE number IS arithmeticTerm # i SCORES 1
+        //TODO: result IS result operator number
         WIN operator INBOUNDS <SCORES>
         START_WHISTLE
             result IS result SCORES number
@@ -103,4 +105,4 @@ START_WHISTLE
 RESULT
 END_WHISTLE
 
-PLAY MainGame USING | 2 10 |
+PLAY MainGame USING | 5 10 |

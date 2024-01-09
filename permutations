@@ -9,29 +9,29 @@ START_WHISTLE
         SCORE i IS startIndex
         PENALTY_SHOOTOUT i TRAILS endIndex
         START_WHISTLE
-            SWAP list AT startIndex WITH i
+            SUBSTITUTE list #startIndex WITH #i
             PLAY Permute USING | list startIndex SCORES 1 endIndex |
-            SWAP list AT startIndex WITH i // backtrack
+            SUBSTITUTE list #startIndex WITH #i
         END_WHISTLE
     END_WHISTLE
+RESULT list
 END_WHISTLE
 
-STRATEGY PrintPermutations USING | list |
-START_WHISTLE
-    PLAY Permute USING | list 0 count |
-END_WHISTLE
 
 STRATEGY MainProgram USING | |
 START_WHISTLE
     ANNOUNCE | <How many numbers do you want to enter?> |
-    SCORE amount IS getint()
+    SCORE amount IS PLAY getint USING | |
+    TEAM numberList IS | |
     PENALTY_SHOOTOUT i TRAILS amount
     START_WHISTLE
         ANNOUNCE | <Enter number> |
-        SCORE number IS getint()
-        SCORE numberList i IS number
+        SCORE number IS PLAY getint USING | |
+        numberList # i IS number
+        i IS i SCORES 1
     END_WHISTLE
-    PLAY PrintPermutations USING | numberList |
+    PLAY Permute USING | list 0 PLAY SIZE USING | numberList | |
+RESULT
 END_WHISTLE
 
 PLAY MainProgram USING | |
