@@ -21,6 +21,9 @@ struct astnode{
         int num;
         char* id;
         char* str;
+        //TODO: add other types as needed
+        //arr_t* arr;
+        //float flt;
     }val;
     struct astnode *child[5]; //change max number of children as needed
 };
@@ -50,7 +53,7 @@ void print_ast(astnode_t* node, int level);
 %token <str> function val param_def param_call assign_member array_is get_member
 %token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
-%token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTION
+%token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTE
 %token <str> INBOUNDS OUTBOUNDS LEADS TRAILS LEADS_OR_TIES TRAILS_OR_TIES
 %token <str> SCORES LOSES MULTIPLIES TACKLES ANDGOAL ORGOAL NOTGOAL REMAINDER
 %token <str> SETS QUICK_PLAY REFEREE INJURY USING
@@ -67,7 +70,14 @@ void print_ast(astnode_t* node, int level);
 %start start
 
 %%
-//TODO: include break (TIMEOUT) and continue (SUBSTITUTION) statements
+//TODO: as an extra add sounds (is this even possible?) would support the sport theme
+
+//TODO: include break (TIMEOUT) and continue (*name needed*) statements
+
+//TODO: datatypes not used yet ... problems in usage?
+    //add type checking
+//TODO: ANNOUNCE parameter_call in one print not for each one
+//TODO: call programs with parameters
 
 start:
     program { compile_ast($1);
@@ -87,6 +97,7 @@ statement:
     | function_declaration //{ $$ = create_node(SET); $$->child[0] = $1; }
     | control_structure //{ $$ = create_node(CNTRL); $$->child[0] = $1; }
     | print_statement //{ $$ = create_node(ANNOUNCE); $$->child[0] = $1; }
+    | swap_statement //{ $$ = create_node(SUBSTITUTE); $$->child[0] = $1; }
     | function_call //{ $$ = create_node(PLAY); $$->child[0] = $1; }
     | condition
 //    | include //should I even support this?
@@ -125,7 +136,7 @@ parameter_def:
 function_call:
       PLAY id USING '|' parameter_call '|' { $$ = create_node(PLAY); $$->child[0] = $2; $$->child[1] = $5; }
 
-parameter_call: //TODO: or make it an expression list?
+parameter_call: //TODO: is there a problem using statement?
       parameter_call statement { $$ = create_node(param_call); $$->child[0] = $1; $$->child[1] = $2; }
     | statement { $$ = create_node(param_call); $$->child[0] = NULL; $$->child[1] = $1; }
     | %empty { $$ = NULL; }
@@ -155,6 +166,11 @@ condition:
 
 print_statement:
       ANNOUNCE '|' parameter_call '|'{ $$ = create_node(ANNOUNCE); $$->child[0] = $3; }
+
+//TODO: so far just for arrays, also add for other types?
+swap_statement:
+  SUBSTITUTE id '#' expression WITH '#' expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = $7; } //TODO: call it SUBSTITUTE_ARRAY?
+     // | SUBSTITUTE id WITH id { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = NULL; }
 
 expression_list:
       expression_list expression { $$ = create_node(val); $$->child[0] = $1; $$->child[1] = $2; }
@@ -377,7 +393,7 @@ int compile_ast(astnode_t* root) {
             }
             return c;
             break;
-        case IS:
+        case IS: //TODO: use CREATEVAL?
             compile_ast(root->child[2]);
             v = var_get_or_addlocal(root->child[1]->val.id);
             prog_add_num(p, v->nr);
@@ -504,8 +520,19 @@ int compile_ast(astnode_t* root) {
             for (int i = 0; i < nrparams; i++) {
                 prog_add_op(p, PRINT);
             }
-            //prog_add_num(p, nrparams); //TODO: help to remove error with announce but not clear what exactly this does
+            //prog_add_num(p, nrparams);
             break;
+        case SUBSTITUTE:
+            //push second value on stack
+            compile_ast(root->child[2]);
+            //push first value on stack
+            compile_ast(root->child[1]);
+            //duplicate
+            prog_add_op(p, DUP);
+            //stack is now: value of second, value of first, value of first
+
+            break;
+
         default:
             printf("Unhandled AST node %s\n", get_node_type_name(root->type));
             assert(0);

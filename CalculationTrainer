@@ -1,4 +1,5 @@
 //TODO: stack is always growing, resolve this
+//TODO: make floats work
 STRATEGY RandomOperator USING | |
 START_WHISTLE
     PLAYER operator IS PLAY random USING | 4 |
