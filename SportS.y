@@ -50,7 +50,7 @@ void print_ast(astnode_t* node, int level);
 %type <ast> condition tie_or_lose_branch parameter_def parameter_call expression_list
 %type <ast> player score goal float datatype number string id boolean team_member
 
-%token <str> function val param_def param_call assign_member array_is get_member
+%token <str> function val param_def param_call assign_member array_is array_member
 %token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
 %token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTE
@@ -169,8 +169,8 @@ print_statement:
 
 //TODO: so far just for arrays, also add for other types?
 swap_statement:
-  SUBSTITUTE id '#' expression WITH '#' expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = $7; } //TODO: call it SUBSTITUTE_ARRAY?
-     // | SUBSTITUTE id WITH id { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = NULL; }
+        SUBSTITUTE expression WITH expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4;} //TODO: call it SUBSTITUTE_ARRAY?
+      //| SUBSTITUTE id WITH id { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = NULL; }
 
 expression_list:
       expression_list expression { $$ = create_node(val); $$->child[0] = $1; $$->child[1] = $2; }
@@ -184,7 +184,7 @@ expression:
     | value TACKLES expression { $$ = create_node(TACKLES); $$->child[0] = $1; $$->child[1] = $3; }
     | value //{ $$ = create_node(val); $$->child[0] = $1; }
     | function_call //{ $$ = create_node(PLAY); $$->child[0] = $1; }
-    | id '#' expression { $$ = create_node(get_member); $$->child[0] = $1; $$->child[1] = $3; }
+    | id '#' expression { $$ = create_node(array_member); $$->child[0] = $1; $$->child[1] = $3; }
     | %empty { $$ = NULL; }
 
 
@@ -263,7 +263,7 @@ const char* get_node_type_name(int type) {
         case IS: return "IS";
         case array_is: return "array_is";
         case assign_member: return "assign_member";
-        case get_member: return "get_member";
+        case array_member: return "array_member";
         default: return "UNKNOWN";
     }
 }
@@ -340,7 +340,7 @@ void print_ast(astnode_t* node, int level) {
         }
     }
 }
-
+//TODO: figure out from where the variables are visible
 int compile_ast(astnode_t* root) {
     int c, nrparams, jmp, pc, jt;
     struct var *v;
@@ -421,7 +421,7 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, INDEXAS);
             break;
 
-        case get_member:
+        case array_member:
             compile_ast(root->child[1]); //number
             compile_ast(root->child[0]); //id
             prog_add_op(p, INDEX1);
@@ -523,13 +523,103 @@ int compile_ast(astnode_t* root) {
             //prog_add_num(p, nrparams);
             break;
         case SUBSTITUTE:
-            //push second value on stack
-            compile_ast(root->child[2]);
-            //push first value on stack
+            //is working for array members and ids
+            //TODO: definitly an extra feature of the language!! (lot of work)
+
+            //e.g. array:   SUBSTITUTE list #startIndex WITH #i
+            //              SUBSTITUTE list #startIndex WITH list #i
+            //or: SUSTITUTE value WITH value
+
+
+            //chil[0] and child[1] are expression, this can be a value(number, string,..), id or an array_member
+            //when I call compile_ast on child[0] and child[1]:
+                //if value the value is on the stack (therefore is subsitute not ment as you can use assign for values)
+                //if id the value of id is on the stack / what if id is an array
+                //if array_member the value of the array_member is on the stack
+
+            //stack: id1, value0, id0, value1, setvar, -> id1, value0, setvar ->
+
+            //stack: value0, (index), id1, value1, (index), id0, setvar or indexas -> value0, id1, setvar or indexas ->
+            //setvar: Set variable OP1 to OP2
+            //indexas: Assign value OP1 at index OP2 with OP3 stack: value, index, id, indexas
+
+            // need to differentiate between id and array_member
+
+            //push value of child[0] on the stack
+            compile_ast(root->child[0]);
+
+            //push id of child[1] on the stack
+            if(root->child[1]->type == ID) {
+                v = var_get_or_addlocal(root->child[1]->val.id);
+                prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
+            } else if(root->child[1]->type == array_member) {
+                compile_ast(root->child[1]); //index number on stack (stack: id, index)
+                v = var_get_or_addlocal(root->child[1]->child[0]->val.id);
+                prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
+            } else {
+                printf("Given type for substitute is not supported!\n");
+            }
+
+            //push value of child[1] on the stack
             compile_ast(root->child[1]);
-            //duplicate
-            prog_add_op(p, DUP);
-            //stack is now: value of second, value of first, value of first
+
+            //push id of child[0] on the stack
+            if(root->child[0]->type == ID) {
+                v = var_get_or_addlocal(root->child[0]->val.id);
+                prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
+            } else if(root->child[0]->type == array_member) {
+                compile_ast(root->child[0]); //index number on stack (stack: id, index)
+                v = var_get_or_addlocal(root->child[0]->child[0]->val.id);
+                prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
+
+            } else {
+                printf("Given type for substitute is not supported!\n");
+            }
+
+            //set child[0] with the value of child[1]
+            //need to differentiate between id and array_member
+            if(root->child[0]->type == ID) {
+                prog_add_op(p, SETVAR);
+            } else if(root->child[0]->type == array_member) {
+                prog_add_op(p, INDEXAS);
+            } else {
+                printf("Given type for substitute is not supported!\n");
+            }
+
+            //set child[1] with the value of child[0]
+            //need to differentiate between id and array_member
+            if(root->child[1]->type == ID) {
+                prog_add_op(p, SETVAR);
+            } else if(root->child[1]->type == array_member) {
+                prog_add_op(p, INDEXAS);
+            } else {
+                printf("Given type for substitute is not supported!\n");
+            }
+
+            break;
+
+
+            //TODO: the following is trash
+
+            v = var_get_or_addlocal(child[1]->val.id);
+            prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
+            prog_add_op(p, DUP); //duplicates the mapped number(id) on the stack
+
+            //push value of child[0] on the stack
+            compile_ast(root->child[0]);
+            //set child[1] with the value of child[0] later
+
+            //push id of child[0] on the stack
+            v = var_get_or_addlocal(child[0]->val.id);
+            prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
+            //push the value of child[1] on the stack
+            compile_ast(root->child[1]);
+
+            //set child[0] with the value of child[1]
+            prog_add_op(p, SETVAR);
+
+            //now there should be the id of child[1] and the old value of child[0] on the stack
+            prog_add_op(p, SETVAR);
 
             break;
 
