@@ -49,6 +49,7 @@ void print_ast(astnode_t* node, int level);
 %type <ast> control_structure print_statement expression value function_call //comment include
 %type <ast> condition tie_or_lose_branch parameter_def parameter_call expression_list
 %type <ast> player score goal float datatype number string id boolean team_member
+%type <ast> swap_statement
 
 %token <str> function val param_def param_call assign_member array_is array_member
 %token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL
@@ -169,7 +170,7 @@ print_statement:
 
 //TODO: so far just for arrays, also add for other types?
 swap_statement:
-        SUBSTITUTE expression WITH expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4;} //TODO: call it SUBSTITUTE_ARRAY?
+        SUBSTITUTE expression '-' expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4;} //TODO: call it SUBSTITUTE_ARRAY?
       //| SUBSTITUTE id WITH id { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = NULL; }
 
 expression_list:
@@ -601,7 +602,7 @@ int compile_ast(astnode_t* root) {
 
             //TODO: the following is trash
 
-            v = var_get_or_addlocal(child[1]->val.id);
+            /*v = var_get_or_addlocal(child[1]->val.id);
             prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
             prog_add_op(p, DUP); //duplicates the mapped number(id) on the stack
 
@@ -621,7 +622,7 @@ int compile_ast(astnode_t* root) {
             //now there should be the id of child[1] and the old value of child[0] on the stack
             prog_add_op(p, SETVAR);
 
-            break;
+            break;*/
 
         default:
             printf("Unhandled AST node %s\n", get_node_type_name(root->type));

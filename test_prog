@@ -1,4 +1,16 @@
+STRATEGY swap USING | var1 var2 |
+START_WHISTLE
 
+    TEAM t IS | var1 var2 |
+    ANNOUNCE | t |
+    SUBSTITUTE t #1 - t#0
+    ANNOUNCE | t |
+
+
+RESULT
+END_WHISTLE
+
+PLAY swap USING | 3 4 |
 
 STRATEGY print USING | var |
 START_WHISTLE
@@ -21,6 +33,5 @@ RESULT
 END_WHISTLE
 
 
-PLAY print USING | 3 |
 
 

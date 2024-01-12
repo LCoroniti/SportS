@@ -55,7 +55,7 @@ extern int yydebug;
     param_call = 261,
     assign_member = 262,
     array_is = 263,
-    get_member = 264,
+    array_member = 264,
     IN = 265,
     OUT = 266,
     PROGRAM = 267,
@@ -78,7 +78,7 @@ extern int yydebug;
     ANNOUNCE = 284,
     RESULT = 285,
     TIMEOUT = 286,
-    SUBSTITUTION = 287,
+    SUBSTITUTE = 287,
     INBOUNDS = 288,
     OUTBOUNDS = 289,
     LEADS = 290,
@@ -111,7 +111,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 37 "SportS.y"
+#line 40 "SportS.y"
 
     int num;            // For numerical values
     char* id;           // For identifiers

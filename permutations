@@ -9,9 +9,9 @@ START_WHISTLE
         SCORE i IS startIndex
         PENALTY_SHOOTOUT i TRAILS endIndex
         START_WHISTLE
-            SUBSTITUTE list #startIndex WITH list #i
+            SUBSTITUTE list #startIndex - list #i
             PLAY Permute USING | list startIndex SCORES 1 endIndex |
-            SUBSTITUTE list #startIndex WITH list #i
+            SUBSTITUTE list #startIndex - list #i
         END_WHISTLE
     END_WHISTLE
 RESULT list

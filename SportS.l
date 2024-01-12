@@ -23,7 +23,7 @@ PRACTICE         "PRACTICE"
 ANNOUNCE         "ANNOUNCE"
 RESULT           "RESULT"
 TIMEOUT          "TIMEOUT"
-SUBSTITUTION     "SUBSTITUTION"
+SUBSTITUTE       "SUBSTITUTE"
 INBOUNDS         "INBOUNDS"
 OUTBOUNDS        "OUTBOUNDS"
 LEADS            "LEADS"
@@ -70,7 +70,7 @@ STRING           \<[^\>]*\>
 {ANNOUNCE}         { return ANNOUNCE; }
 {RESULT}           { return RESULT; }
 {TIMEOUT}          { return TIMEOUT; }
-{SUBSTITUTION}     { return SUBSTITUTION; }
+{SUBSTITUTE}     { return SUBSTITUTE; }
 {INBOUNDS}         { return INBOUNDS; }
 {OUTBOUNDS}        { return OUTBOUNDS; }
 {LEADS}            { return LEADS; }
