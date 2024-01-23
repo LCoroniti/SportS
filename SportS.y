@@ -11,6 +11,7 @@ extern FILE *yyin;
 int yylex(void);
 void yyerror(const char *s) {
     fprintf(stderr, "Line %d: %s\n", yylineno, s);
+    //TODO: additional logic here to handle diffferent types of errors
 }
 
 typedef struct astnode astnode_t;
@@ -60,6 +61,7 @@ void print_ast(astnode_t* node, int level);
 %token <str> SETS QUICK_PLAY REFEREE INJURY USING
 %token <num> NUMBER
 %token <str> ID COACH BUY IS STRING
+//%token <str> FOUL OFFSIDE HANDBALL
 
 //Define operator precedence and associativity here (TODO: is this right?)
 
@@ -212,6 +214,16 @@ boolean:
 
 float:
       number ':' number { $$ = create_node(FLOAT); $$->child[0] = $1; $$->child[1] = $3; }
+
+/*
+error:
+       %empty {$$ = NULL}
+     | error FOUL
+     | error OFFSIDE
+     | error HANDBALL
+     ;
+*/
+
 
 %%
 
@@ -458,11 +470,12 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[1]);
             prog_add_op(p, CONDBEGIN);
             compile_ast(root->child[2]);
-            prog_add_op(p, CONDEND); //try if working or CONDEND?
+            prog_add_op(p, CONDELSE); //try if working or CONDEND?
             break;
         case LOSE:
             compile_ast(root->child[0]);
             compile_ast(root->child[1]);
+            prog_add_op(p, CONDEND);
             break;
         case PENALTY_SHOOTOUT:
             prog_add_op(p, LOOPBEGIN);

@@ -1,0 +1,69 @@
+// Define the data types for clarity
+PLAYER Team1, Team2
+SCORE score1 IS 0, score2 IS 0
+TEAM roster1, roster2
+
+// Function to add score to a team
+STRATEGY AddScore USING | TEAM team, SCORE points |
+START_WHISTLE
+    WIN team EQUALS Team1 START_WHISTLE
+        score1 IS score1 SCORES points
+    END_WHISTLE
+    LOSE START_WHISTLE
+        score2 IS score2 SCORES points
+    END_WHISTLE
+RESULT
+END_WHISTLE
+
+// Function to swap the first player between two teams
+STRATEGY SwapFirstPlayer USING | |
+START_WHISTLE
+    SUBSTITUTE roster1 # 0 - roster2 # 0
+    ANNOUNCE | "First players have been swapped between teams!" |
+RESULT
+END_WHISTLE
+
+// Function to check which team is leading
+STRATEGY CheckWinner USING | |
+START_WHISTLE
+    WIN score1 LEADS score2 START_WHISTLE
+        ANNOUNCE | "Team 1 is leading!" |
+    TIE score1 EQUALS score2 START_WHISTLE
+        ANNOUNCE | "It's a tie!" |
+    LOSE START_WHISTLE
+        ANNOUNCE | "Team 2 is leading!" |
+    END_WHISTLE
+RESULT
+END_WHISTLE
+
+// Main program to track scores, swap players, and announce the winner
+STRATEGY MainProgram USING | |
+START_WHISTLE
+    Team1 IS "Tigers"
+    Team2 IS "Lions"
+    roster1 IS | "Alice", "Bob", "Charlie" | // Team roster as an array
+    roster2 IS | "Dave", "Eve", "Frank" |
+
+    ANNOUNCE | "Game Start!" |
+
+    PLAY AddScore USING | Team1 3 |
+    PLAY AddScore USING | Team2 2 |
+
+    // Swap the first players of each team
+    PLAY SwapFirstPlayer USING | |
+
+    PLAY AddScore USING | Team1 2 |
+    PLAY AddScore USING | Team2 3 |
+
+    PLAY CheckWinner USING | |
+
+    ANNOUNCE | "Final Score - Team 1: " |
+    ANNOUNCE | score1 |
+    ANNOUNCE | ", Team 2: " |
+    ANNOUNCE | score2 |
+
+RESULT
+END_WHISTLE
+
+// Start the main program
+PLAY MainProgram USING | |

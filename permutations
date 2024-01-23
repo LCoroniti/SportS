@@ -1,28 +1,30 @@
 STRATEGY Permute USING | list startIndex endIndex |
 START_WHISTLE
+    ANNOUNCE | <permute: > list startIndex endIndex |
     WIN startIndex INBOUNDS endIndex
     START_WHISTLE
         ANNOUNCE | list |
     END_WHISTLE
     LOSE
     START_WHISTLE
-        SCORE i IS startIndex
-        PENALTY_SHOOTOUT i TRAILS endIndex
+        SCORE i IS startIndex SCORES 1
+        PENALTY_SHOOTOUT i TRAILS endIndex SCORES 1
         START_WHISTLE
             SUBSTITUTE list #startIndex - list #i
-            PLAY Permute USING | list startIndex SCORES 1 endIndex |
-            SUBSTITUTE list #startIndex - list #i
+            PLAY Permute USING | list i endIndex |
+            i SCORES 1
         END_WHISTLE
     END_WHISTLE
-RESULT list
+RESULT
 END_WHISTLE
 
 
 STRATEGY MainProgram USING | |
 START_WHISTLE
-    ANNOUNCE | <How many numbers do you want to enter?> |
+    ANNOUNCE | <How many numbers do you want to permute?> |
     SCORE amount IS PLAY getint USING | |
     TEAM numberList IS | |
+    SCORE i IS 0
     PENALTY_SHOOTOUT i TRAILS amount
     START_WHISTLE
         ANNOUNCE | <Enter number> |
@@ -30,7 +32,8 @@ START_WHISTLE
         numberList # i IS number
         i IS i SCORES 1
     END_WHISTLE
-    PLAY Permute USING | list 0 PLAY SIZE USING | numberList | |
+    SCORE size IS PLAY SIZE USING | numberList |
+    PLAY Permute USING | numberList 0 size LOSES 1 |
 RESULT
 END_WHISTLE
 

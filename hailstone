@@ -1,7 +1,10 @@
 
 
-STRATEGY hailstone USING | number |
+STRATEGY hailstone USING |  |
 START_WHISTLE
+    ANNOUNCE | <Enter start number for hailstone sequence: > |
+    //TODO: check if int
+    number IS PLAY getint USING | |
     SCORE stepCount IS 0
     PENALTY_SHOOTOUT number OUTBOUNDS 1
     START_WHISTLE
@@ -22,4 +25,4 @@ START_WHISTLE
 RESULT
 END_WHISTLE
 
-PLAY hailstone USING | 20 |
+PLAY hailstone USING |  |
