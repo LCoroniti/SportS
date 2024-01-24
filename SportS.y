@@ -49,10 +49,10 @@ void print_ast(astnode_t* node, int level);
 %type <ast> program statement variable_declaration assignment function_declaration
 %type <ast> control_structure print_statement expression value function_call //comment include
 %type <ast> condition tie_or_lose_branch parameter_def parameter_call expression_list
-%type <ast> player score goal float datatype number string id boolean team_member
+%type <ast> float datatype number string id boolean
 %type <ast> swap_statement
 
-%token <str> function val param_def param_call assign_member array_is array_member
+%token <str> function val param_def param_call assign_member array_is array_member expr_list
 %token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
 %token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTE
@@ -74,6 +74,7 @@ void print_ast(astnode_t* node, int level);
 
 %%
 //TODO: as an extra add sounds (is this even possible?) would support the sport theme
+//TODO: error handling
 
 //TODO: include break (TIMEOUT) and continue (*name needed*) statements
 
@@ -112,12 +113,13 @@ statement:
 
 variable_declaration:
       datatype id { $$ = create_node(ID); $$->child[1] = $2; } //TODO: change
+      | TEAM id { $$ = create_node(ID); $$->child[1] = $2; } //TODO: change
 
 assignment: //TODO: if assigned with eg INBOUNDS (condition) -> maybe put expression and conditon to one rule?
       datatype id IS condition { $$ = create_node(IS); $$->child[1] = $2; $$->child[2] = $4;}
       | id IS condition { $$ = create_node(IS); $$->child[1] = $1; $$->child[2] = $3;}
       | TEAM id IS '|' expression_list '|' { $$ = create_node(array_is); $$->child[1] = $2; $$->child[2] = $5; }
-      | id IS '|' parameter_call '|' { $$ = create_node(array_is); $$->child[1] = $1; $$->child[2] = $4; }
+      | id IS '|' expression_list '|' { $$ = create_node(array_is); $$->child[1] = $1; $$->child[2] = $4; }
       | id '#' expression IS expression { $$ = create_node(assign_member); $$->child[0] = $1; $$->child[1] = $3; $$->child[2] = $5; }
 
 
@@ -125,7 +127,6 @@ datatype: //TODO: set datatype as a child so i can use it in my compiler
       PLAYER { $$ = create_node(PLAYER); }
     | SCORE { $$ = create_node(SCORE); }
     | GOAL { $$ = create_node(GOAL); }
-    | TEAM { $$ = create_node(TEAM); }
 
 function_declaration:
       STRATEGY id USING '|' parameter_def '|' START_WHISTLE program RESULT expression END_WHISTLE
@@ -176,8 +177,8 @@ swap_statement:
       //| SUBSTITUTE id WITH id { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = NULL; }
 
 expression_list:
-      expression_list expression { $$ = create_node(val); $$->child[0] = $1; $$->child[1] = $2; }
-    | expression { $$ = create_node(val); $$->child[0] = NULL; $$->child[1] = $1; }
+      expression_list expression { $$ = create_node(expr_list); $$->child[0] = $1; $$->child[1] = $2; }
+    | expression { $$ = create_node(expr_list); $$->child[0] = NULL; $$->child[1] = $1; }
 
 expression:
      value REMAINDER expression { $$ = create_node(REMAINDER); $$->child[0] = $1; $$->child[1] = $3; }
@@ -272,6 +273,7 @@ const char* get_node_type_name(int type) {
         case GOAL: return "GOAL";
         case param_def: return "parameter_def";
         case param_call: return "parameter_call";
+        case expr_list: return "expression_list";
         case val: return "value";
         case IS: return "IS";
         case array_is: return "array_is";
@@ -406,6 +408,15 @@ int compile_ast(astnode_t* root) {
             }
             return c;
             break;
+        case expr_list:
+            compile_ast(root->child[1]);
+            if(root->child[0] != NULL) {
+                c = compile_ast(root->child[0]) + 1;
+            } else {
+                c = 0;
+            }
+            return c;
+            break;
         case IS: //TODO: use CREATEVAL?
             compile_ast(root->child[2]);
             v = var_get_or_addlocal(root->child[1]->val.id);
@@ -418,6 +429,7 @@ int compile_ast(astnode_t* root) {
             nrparams = 0;
             if (root->child[2] != NULL) {
                 nrparams = compile_ast(root->child[2])+1;
+                printf("nrparams: %d\n", nrparams);
             }
             prog_add_num(p, nrparams);
             prog_add_op(p, MKARRAY);
@@ -464,18 +476,20 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, CONDELSE);
             compile_ast(root->child[2]);
             prog_add_op(p, CONDEND);
+            prog_add_num(p, 0);
             break;
         case TIE:
             compile_ast(root->child[0]);
             compile_ast(root->child[1]);
             prog_add_op(p, CONDBEGIN);
             compile_ast(root->child[2]);
-            prog_add_op(p, CONDELSE); //try if working or CONDEND?
+            prog_add_op(p, CONDELSE);
             break;
         case LOSE:
             compile_ast(root->child[0]);
             compile_ast(root->child[1]);
             prog_add_op(p, CONDEND);
+            prog_add_num(p, 0);
             break;
         case PENALTY_SHOOTOUT:
             prog_add_op(p, LOOPBEGIN);
@@ -540,9 +554,8 @@ int compile_ast(astnode_t* root) {
             //is working for array members and ids
             //TODO: definitly an extra feature of the language!! (lot of work)
 
-            //e.g. array:   SUBSTITUTE list #startIndex WITH #i
-            //              SUBSTITUTE list #startIndex WITH list #i
-            //or: SUSTITUTE value WITH value
+            //e.g. array:  SUBSTITUTE list #startIndex WITH list #i
+            //or: SUSTITUTE expression WITH expression
 
 
             //chil[0] and child[1] are expression, this can be a value(number, string,..), id or an array_member
@@ -563,11 +576,12 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[0]);
 
             //push id of child[1] on the stack
+
             if(root->child[1]->type == ID) {
                 v = var_get_or_addlocal(root->child[1]->val.id);
                 prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
             } else if(root->child[1]->type == array_member) {
-                compile_ast(root->child[1]); //index number on stack (stack: id, index)
+                compile_ast(root->child[1]->child[1]); //index number on stack (stack: id, index)
                 v = var_get_or_addlocal(root->child[1]->child[0]->val.id);
                 prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
             } else {
@@ -582,7 +596,7 @@ int compile_ast(astnode_t* root) {
                 v = var_get_or_addlocal(root->child[0]->val.id);
                 prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
             } else if(root->child[0]->type == array_member) {
-                compile_ast(root->child[0]); //index number on stack (stack: id, index)
+                compile_ast(root->child[0]->child[1]); //index number on stack (stack: id, index)
                 v = var_get_or_addlocal(root->child[0]->child[0]->val.id);
                 prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
 
@@ -611,32 +625,6 @@ int compile_ast(astnode_t* root) {
             }
 
             break;
-
-
-            //TODO: the following is trash
-
-            /*v = var_get_or_addlocal(child[1]->val.id);
-            prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
-            prog_add_op(p, DUP); //duplicates the mapped number(id) on the stack
-
-            //push value of child[0] on the stack
-            compile_ast(root->child[0]);
-            //set child[1] with the value of child[0] later
-
-            //push id of child[0] on the stack
-            v = var_get_or_addlocal(child[0]->val.id);
-            prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
-            //push the value of child[1] on the stack
-            compile_ast(root->child[1]);
-
-            //set child[0] with the value of child[1]
-            prog_add_op(p, SETVAR);
-
-            //now there should be the id of child[1] and the old value of child[0] on the stack
-            prog_add_op(p, SETVAR);
-
-            break;*/
-
         default:
             printf("Unhandled AST node %s\n", get_node_type_name(root->type));
             assert(0);
@@ -667,7 +655,7 @@ int main(int argc, char **argv) {
     snprintf(bytecode, 1000, "%s.vm3", argv[1]);
     prog_write(p, bytecode);
     exec_t *e = exec_new(p);
-    //exec_set_debuglvl(e, E_DEBUG2);
+    exec_set_debuglvl(e, E_DEBUG2);
     exec_run(e);
 
     return st;

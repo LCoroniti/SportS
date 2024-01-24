@@ -1,0 +1,38 @@
+
+Locale Variable an Stelle 0 ist das Array.
+
+debug2: Stack: [0 : 3, 1 : 4] 3 1 0 4 0 0 (TOP)
+debug:  47: OP INDEXAS (47)
+--Array(0)[0] = 4
+
+debug2: Stack: [0 : 3, 1 : 4] 3 1 0 (TOP)
+debug:  48: OP INDEXAS (47)
+--Array[1] = 3
+
+debug2: Stack: [0 : 3, 1 : 4] (TOP)
+debug:  49: PUSH 0
+debug2: Stack: [0 : 3, 1 : 4] 0 (TOP)
+debug:  50: OP GETVAR (21)
+debug2: getvar 0: [0 : 3, 1 : 4]
+debug2: Stack: [0 : 3, 1 : 4] [0 : 3, 1 : 4] (TOP)
+
+
+Warum sind die Werte nicht übernommen worden?
+
+Hier auch noch der Teil, wo das Array erstellt wird: 
+debug2: Stack: 4 3 (TOP)
+debug:   4: PUSH 2
+debug2: Stack: 4 3 2 (TOP)
+debug:   5: OP MKARRAY (45)
+debug2: Stack: [0 : 3, 1 : 4] (TOP)
+debug:   6: PUSH 0
+debug2: Stack: [0 : 3, 1 : 4] 0 (TOP)
+debug:   7: OP SETVAR (22)
+debug2: setvar 0: [0 : 3, 1 : 4]
+debug2: Stack: (TOP)
+debug:   8: PUSH 0
+debug2: Stack: 0 (TOP)
+debug:   9: OP GETVAR (21)
+debug2: getvar 0: [0 : 3, 1 : 4]
+debug2: Stack: [0 : 3, 1 : 4] (TOP)
+

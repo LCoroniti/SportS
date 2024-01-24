@@ -1,24 +1,16 @@
 
-
-STRATEGY print USING | var |
+STRATEGY test_substitute USING | |
 START_WHISTLE
-    WIN var INBOUNDS 0
-    START_WHISTLE
-            ANNOUNCE | <win> |
-    END_WHISTLE
-    TIE var INBOUNDS 1
-    START_WHISTLE
-            ANNOUNCE | <tie> |
-    END_WHISTLE
-    LOSE
-    START_WHISTLE
-            ANNOUNCE | <lose> |
-    END_WHISTLE
+
+    TEAM test IS | 3 4 |
+    SUBSTITUTE test #0 - test #1
 
 RESULT
 END_WHISTLE
 
+PLAY test_substitute USING ||
 
-PLAY print USING | 3 |
+
+
 
 
