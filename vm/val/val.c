@@ -132,11 +132,9 @@ val_t *val_index (val_t *val, val_t *i) {
 val_t *val_index_assign (val_t *val, val_t *i, val_t *v2) {
   int type = val->type;
   if (!val_ops[type].index_assign) {
-      printf("can not assign array index, type: %d \n", type);
       return &val_undef;
   }
   else {
-      printf("should have assigned array index");
       return val_ops[type].index_assign(val, i, v2);
   }
 }

@@ -443,13 +443,14 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[2]); //value (expression)
             compile_ast(root->child[1]); //number
             compile_ast(root->child[0]); //id
+            prog_add_op(p, GETVAR);      //array on stack
             prog_add_op(p, INDEXAS);
             break;
 
         case array_member:
             compile_ast(root->child[1]); //number
             compile_ast(root->child[0]); //id
-            prog_add_op(p, INDEX1);
+            prog_add_op(p, INDEX1); //TODO: is this working or do I need to put the array on the stack
             break;
         case val:
             compile_ast(root->child[0]);
@@ -609,6 +610,7 @@ int compile_ast(astnode_t* root) {
             if(root->child[0]->type == ID) {
                 prog_add_op(p, SETVAR);
             } else if(root->child[0]->type == array_member) {
+                prog_add_op(p, GETVAR);
                 prog_add_op(p, INDEXAS);
             } else {
                 printf("Given type for substitute is not supported!\n");
@@ -619,6 +621,7 @@ int compile_ast(astnode_t* root) {
             if(root->child[1]->type == ID) {
                 prog_add_op(p, SETVAR);
             } else if(root->child[1]->type == array_member) {
+                prog_add_op(p, GETVAR);
                 prog_add_op(p, INDEXAS);
             } else {
                 printf("Given type for substitute is not supported!\n");
