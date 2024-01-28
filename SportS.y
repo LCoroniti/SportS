@@ -443,13 +443,13 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[2]); //value (expression)
             compile_ast(root->child[1]); //number
             compile_ast(root->child[0]); //id
-            prog_add_op(p, GETVAR);      //array on stack
             prog_add_op(p, INDEXAS);
             break;
 
         case array_member:
             compile_ast(root->child[1]); //number
             compile_ast(root->child[0]); //id
+            //prog_add_op(p, GETVAR);      //array on stack
             prog_add_op(p, INDEX1); //TODO: is this working or do I need to put the array on the stack
             break;
         case val:
@@ -658,7 +658,7 @@ int main(int argc, char **argv) {
     snprintf(bytecode, 1000, "%s.vm3", argv[1]);
     prog_write(p, bytecode);
     exec_t *e = exec_new(p);
-    exec_set_debuglvl(e, E_DEBUG2);
+    //exec_set_debuglvl(e, E_DEBUG2);
     exec_run(e);
 
     return st;

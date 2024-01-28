@@ -3,14 +3,25 @@ STRATEGY test_substitute USING | |
 START_WHISTLE
 
     TEAM test IS | 3 4 |
+    a IS 5
+    b IS 6
 
-    test #0 IS 1
-    ANNOUNCE | test #0 |
+    ANNOUNCE | test |
+
+    SUBSTITUTE test #0 - test #1
+
+    SUBSTITUTE test #0 - a
+    SUBSTITUTE b - test #1
+
+    ANNOUNCE | test |
+    ANNOUNCE | a  b |
+
+
 
 RESULT
 END_WHISTLE
 
-PLAY test_substitute USING ||
+PLAY test_substitute USING | |
 
 
 
