@@ -1,18 +1,18 @@
 STRATEGY Permute USING | list startIndex endIndex |
 START_WHISTLE
-    ANNOUNCE | <permute: > list startIndex endIndex |
     WIN startIndex INBOUNDS endIndex
     START_WHISTLE
         ANNOUNCE | list |
     END_WHISTLE
     LOSE
     START_WHISTLE
-        SCORE i IS startIndex SCORES 1
+        SCORE i IS startIndex
         PENALTY_SHOOTOUT i TRAILS endIndex SCORES 1
         START_WHISTLE
-            SUBSTITUTE list #startIndex - list #i
-            PLAY Permute USING | list i endIndex |
-            i SCORES 1
+            SUBSTITUTE list # startIndex - list # i
+            PLAY Permute USING | list startIndex SCORES 1 endIndex |
+            SUBSTITUTE list # i - list # startIndex
+            i IS i SCORES 1
         END_WHISTLE
     END_WHISTLE
 RESULT
