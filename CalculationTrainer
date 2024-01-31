@@ -1,5 +1,4 @@
-//TODO: stack is always growing, resolve this
-//TODO: make floats work
+
 STRATEGY RandomOperator USING | |
 START_WHISTLE
     PLAYER operator IS PLAY random USING | 4 |
@@ -24,7 +23,7 @@ END_WHISTLE
 
 STRATEGY GenerateArithmeticTerm USING | termLength maxNumber|
 START_WHISTLE
-    SCORE rand IS PLAY random USING | 10 |
+    SCORE rand IS PLAY random USING | maxNumber |
     TEAM term IS | rand |
     ANNOUNCE | <Term: > term |
     SCORE i IS 1
@@ -54,7 +53,6 @@ START_WHISTLE
     START_WHISTLE
         PLAYER operator IS arithmeticTerm # i
         SCORE number IS arithmeticTerm # i SCORES 1
-        //TODO: result IS result operator number
         WIN operator INBOUNDS <SCORES>
         START_WHISTLE
             result IS result SCORES number
@@ -78,7 +76,7 @@ END_WHISTLE
 
 STRATEGY MainGame USING | termLength maxNumber |
 START_WHISTLE
-    PLAYER arithmeticTerm IS PLAY GenerateArithmeticTerm USING | termLength |
+    PLAYER arithmeticTerm IS PLAY GenerateArithmeticTerm USING | termLength maxNumber |
     ANNOUNCE | <Solve this term: > arithmeticTerm |
     PLAYER userGuess IS PLAY getint USING | |
     PLAYER correctAnswer IS PLAY calculate USING |arithmeticTerm |
@@ -97,7 +95,7 @@ START_WHISTLE
     WIN userChoice INBOUNDS <IN>
     START_WHISTLE
         ANNOUNCE | <Let's go!> |
-        PLAY MainGame USING | termLength |
+        PLAY MainGame USING | termLength maxNumber |
     END_WHISTLE
     LOSE
     START_WHISTLE

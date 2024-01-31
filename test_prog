@@ -2,10 +2,10 @@
 STRATEGY test_substitute USING | |
 START_WHISTLE
 
-    TEAM test IS | 3 4 |
-    test IS | test 4 |
-
-    ANNOUNCE | test |
+    a IS 6
+    b IS 4:0
+    c IS a TACKLES b
+    ANNOUNCE | c |
 
 
 

@@ -5,6 +5,9 @@
 #include <getopt.h>
 #include <errno.h>
 #include "vm/vm.h"
+#include <alsa/asoundlib.h>
+#include <math.h>
+#include <unistd.h>
 
 extern int yylineno;
 extern FILE *yyin;
@@ -34,6 +37,7 @@ int compile_ast(astnode_t* root);
 
 void print_ast_dot(astnode_t* node, int depth);
 void print_ast(astnode_t* node, int level);
+void whistle();
 %}
 
 %define parse.error verbose
@@ -87,6 +91,7 @@ start:
     program { compile_ast($1);
     print_ast($1, 0);
     print_ast_dot($1, 0);
+    whistle();
     }
 
 
@@ -460,6 +465,12 @@ int compile_ast(astnode_t* root) {
         case NUMBER:
             prog_add_num(p, root->val.num);
             break;
+        case FLOAT:
+            prog_add_num(p, root->child[1]->val.num);
+            prog_add_num(p, root->child[0]->val.num);
+            prog_add_op(p, MKFLOAT);
+            break;
+
         case ID:
             v = var_get_or_addlocal(root->val.id);
             prog_add_num(p, v->nr);
@@ -637,6 +648,27 @@ int compile_ast(astnode_t* root) {
 
     return 0;
 }
+
+void whistle(){
+    snd_pcm_t *handle;
+    snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0);
+    snd_pcm_set_params(handle, SND_PCM_FORMAT_U8, SND_PCM_ACCESS_RW_INTERLEAVED, 1, 44100, 1, 500000);
+
+    int sample_rate = 44100;
+    int duration = 1;
+    int freq = 440;
+
+    int samples = duration * sample_rate;
+    int16_t *buffer = malloc(samples * sizeof(int16_t));
+    for (int i = 0; i < samples; i++) {
+        buffer[i] = (int16_t)(sin(2.0 * M_PI * freq * ((float)i / sample_rate)) * 32767);
+    }
+
+    snd_pcm_writei(handle, buffer, samples);
+    snd_pcm_drain(handle);
+
+}
+
 
 int main(int argc, char **argv) {
     p = prog_new();

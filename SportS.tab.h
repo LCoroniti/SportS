@@ -112,7 +112,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 41 "SportS.y"
+#line 45 "SportS.y"
 
     int num;            // For numerical values
     char* id;           // For identifiers
