@@ -23,12 +23,14 @@ STRATEGY MainProgram USING | |
 START_WHISTLE
     ANNOUNCE | <How many numbers do you want to permute?> |
     SCORE amount IS PLAY getint USING | |
+    //TODO: check if int
     TEAM numberList IS | |
     SCORE i IS 0
     PENALTY_SHOOTOUT i TRAILS amount
     START_WHISTLE
         ANNOUNCE | <Enter number> |
         SCORE number IS PLAY getint USING | |
+        //TODO: check if int
         numberList # i IS number
         i IS i SCORES 1
     END_WHISTLE

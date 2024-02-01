@@ -7,7 +7,7 @@ TARGETS=SportS
 all: clean $(TARGETS)
 
 %: %.lex.o %.tab.o $(OBJS) vm/libvm3.a
-	$(CC) -o $@ $^ -lasound -lm
+	$(CC) -o $@ $^
 
 %.tab.o: %.tab.c %.tab.h
 	$(CC) -c $(CFLAGS) $< -o $@

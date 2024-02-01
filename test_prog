@@ -1,18 +1,43 @@
 
-STRATEGY test_substitute USING | |
+STRATEGY test USING | |
 START_WHISTLE
+    SCORE i IS 0
+    PENALTY_SHOOTOUT i TRAILS 4
+    START_WHISTLE
 
-    a IS 6
-    b IS 4:0
-    c IS a TACKLES b
-    ANNOUNCE | c |
+    PLAYER operator IS PLAY random USING | 4 |
+    ANNOUNCE | <Operator: > operator |
+    WIN operator INBOUNDS 0
+    START_WHISTLE
+        operator IS <SCORES>
+        ANNOUNCE | <Operator0: > operator |
+    END_WHISTLE
+    TIE operator INBOUNDS 1
+    START_WHISTLE
+        operator IS <LOSES>
+        ANNOUNCE | <Operator1: > operator |
+    END_WHISTLE
+    TIE operator INBOUNDS 2
+    START_WHISTLE
+        operator IS <MULTIPLIES>
 
+        ANNOUNCE | <Operator2: > operator |
+    END_WHISTLE
+    TIE operator INBOUNDS 3
+    START_WHISTLE
+        operator IS <TACKLES>
+        ANNOUNCE | <Operator3: > operator |
+    END_WHISTLE
 
+    ANNOUNCE | <Operator: > operator <i: > i |
+
+    i IS i SCORES 1
+    END_WHISTLE
 
 RESULT
 END_WHISTLE
 
-PLAY test_substitute USING | |
+PLAY test USING | |
 
 
 

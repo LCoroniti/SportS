@@ -5,9 +5,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include "vm/vm.h"
-#include <alsa/asoundlib.h>
-#include <math.h>
-#include <unistd.h>
+#include <portaudio.h>
 
 extern int yylineno;
 extern FILE *yyin;
@@ -91,7 +89,7 @@ start:
     program { compile_ast($1);
     print_ast($1, 0);
     print_ast_dot($1, 0);
-    whistle();
+    //whistle();
     }
 
 
@@ -361,6 +359,8 @@ void print_ast(astnode_t* node, int level) {
     }
 }
 //TODO: figure out from where the variables are visible
+//TODO: delete commented code
+
 int compile_ast(astnode_t* root) {
     int c, nrparams, jmp, pc, jt;
     struct var *v;
@@ -427,8 +427,8 @@ int compile_ast(astnode_t* root) {
             v = var_get_or_addlocal(root->child[1]->val.id);
             prog_add_num(p, v->nr);
             prog_add_op(p, SETVAR);
-            prog_add_num(p, v->nr);
-            prog_add_op(p, GETVAR); //unnecessary?
+            //prog_add_num(p, v->nr);
+            //prog_add_op(p, GETVAR); //unnecessary?
             break;
         case array_is:
             nrparams = 0;
@@ -488,7 +488,8 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, CONDELSE);
             compile_ast(root->child[2]);
             prog_add_op(p, CONDEND);
-            prog_add_num(p, 0);
+            //prog_add_op(p, CONDELSE);
+            //prog_add_num(p, 0);
             break;
         case TIE:
             compile_ast(root->child[0]);
@@ -496,12 +497,15 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, CONDBEGIN);
             compile_ast(root->child[2]);
             prog_add_op(p, CONDELSE);
+            prog_add_op(p, CONDEND);
+            //prog_add_num(p, 0);
             break;
         case LOSE:
             compile_ast(root->child[0]);
+            prog_add_op(p, CONDELSE);
             compile_ast(root->child[1]);
             prog_add_op(p, CONDEND);
-            prog_add_num(p, 0);
+            //prog_add_num(p, 0);
             break;
         case PENALTY_SHOOTOUT:
             prog_add_op(p, LOOPBEGIN);
@@ -509,7 +513,7 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, LOOPBODY);
             compile_ast(root->child[1]);
             prog_add_op(p, LOOPEND);
-            prog_add_num(p, 0);
+            //prog_add_num(p, 0);
             break;
         case OUTBOUNDS:
             compile_ast(root->child[1]);
@@ -552,6 +556,7 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, SUB);
             break;
         case ANNOUNCE:
+            //TODO: print all together
             nrparams = 0;
             if (root->child[0] != NULL) {
                 nrparams = compile_ast(root->child[0])+1;
@@ -649,25 +654,6 @@ int compile_ast(astnode_t* root) {
     return 0;
 }
 
-void whistle(){
-    snd_pcm_t *handle;
-    snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0);
-    snd_pcm_set_params(handle, SND_PCM_FORMAT_U8, SND_PCM_ACCESS_RW_INTERLEAVED, 1, 44100, 1, 500000);
-
-    int sample_rate = 44100;
-    int duration = 1;
-    int freq = 440;
-
-    int samples = duration * sample_rate;
-    int16_t *buffer = malloc(samples * sizeof(int16_t));
-    for (int i = 0; i < samples; i++) {
-        buffer[i] = (int16_t)(sin(2.0 * M_PI * freq * ((float)i / sample_rate)) * 32767);
-    }
-
-    snd_pcm_writei(handle, buffer, samples);
-    snd_pcm_drain(handle);
-
-}
 
 
 int main(int argc, char **argv) {
@@ -690,7 +676,7 @@ int main(int argc, char **argv) {
     snprintf(bytecode, 1000, "%s.vm3", argv[1]);
     prog_write(p, bytecode);
     exec_t *e = exec_new(p);
-    //exec_set_debuglvl(e, E_DEBUG2);
+    exec_set_debuglvl(e, E_DEBUG2);
     exec_run(e);
 
     return st;

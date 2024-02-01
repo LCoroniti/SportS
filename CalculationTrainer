@@ -2,6 +2,7 @@
 STRATEGY RandomOperator USING | |
 START_WHISTLE
     PLAYER operator IS PLAY random USING | 4 |
+    ANNOUNCE | <Operator: > operator |
     WIN operator INBOUNDS 0
     START_WHISTLE
         operator IS <SCORES>
@@ -21,7 +22,7 @@ START_WHISTLE
 RESULT operator
 END_WHISTLE
 
-STRATEGY GenerateArithmeticTerm USING | termLength maxNumber|
+STRATEGY GenerateArithmeticTerm USING | termLength maxNumber |
 START_WHISTLE
     SCORE rand IS PLAY random USING | maxNumber |
     TEAM term IS | rand |
@@ -30,15 +31,18 @@ START_WHISTLE
     PENALTY_SHOOTOUT i TRAILS termLength
     START_WHISTLE
         PLAYER operator IS PLAY RandomOperator USING | |
+        ANNOUNCE | <op2: > operator |
         term # i IS operator
         ANNOUNCE | <Term: > term |
 
         i IS i SCORES 1
         PLAYER number IS PLAY random USING | 10 |
+        ANNOUNCE | <number: > number |
         term # i IS number
         ANNOUNCE | <Term: > term |
 
         i IS i SCORES 1
+        ANNOUNCE | <i: > i |
     END_WHISTLE
     ANNOUNCE | <Term: > term |
 RESULT term
@@ -104,4 +108,4 @@ START_WHISTLE
 RESULT
 END_WHISTLE
 
-PLAY MainGame USING | 5 10 |
+PLAY MainGame USING | 4 10 |
