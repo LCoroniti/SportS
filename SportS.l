@@ -43,7 +43,7 @@ QUICK_PLAY       "QUICK_PLAY"
 REFEREE          "REFEREE"
 INJURY           "INJURY"
 USING            "USING"
-COACH            "COACH#" ~('\r' | '\n' | '\\')*
+COACH            "*COACH"[^\n]*
 BUY              "BUY"
 NUMBER           [0-9]+
 ID               [a-zA-Z_][a-zA-Z0-9_]*
@@ -70,7 +70,7 @@ STRING           \<[^\>]*\>
 {ANNOUNCE}         { return ANNOUNCE; }
 {RESULT}           { return RESULT; }
 {TIMEOUT}          { return TIMEOUT; }
-{SUBSTITUTE}     { return SUBSTITUTE; }
+{SUBSTITUTE}       { return SUBSTITUTE; }
 {INBOUNDS}         { return INBOUNDS; }
 {OUTBOUNDS}        { return OUTBOUNDS; }
 {LEADS}            { return LEADS; }
@@ -91,7 +91,7 @@ STRING           \<[^\>]*\>
 {INJURY}           { return INJURY; }
 {BUY}              { return BUY; }
 {USING}            { return USING; }
-
+{COACH}            { }
 {NUMBER}           { yylval.num = atoi(yytext); return NUMBER; }
 {STRING}           {
                        int len = strlen(yytext) - 2; // Length of the string without quotes

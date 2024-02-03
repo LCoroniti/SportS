@@ -67,44 +67,45 @@ extern int yydebug;
     TEAM = 273,
     SET = 274,
     CNTRL = 275,
-    START_WHISTLE = 276,
-    END_WHISTLE = 277,
-    STRATEGY = 278,
-    PLAY = 279,
-    WIN = 280,
-    TIE = 281,
-    LOSE = 282,
-    PENALTY_SHOOTOUT = 283,
-    PRACTICE = 284,
-    ANNOUNCE = 285,
-    RESULT = 286,
-    TIMEOUT = 287,
-    SUBSTITUTE = 288,
-    INBOUNDS = 289,
-    OUTBOUNDS = 290,
-    LEADS = 291,
-    TRAILS = 292,
-    LEADS_OR_TIES = 293,
-    TRAILS_OR_TIES = 294,
-    SCORES = 295,
-    LOSES = 296,
-    MULTIPLIES = 297,
-    TACKLES = 298,
-    ANDGOAL = 299,
-    ORGOAL = 300,
-    NOTGOAL = 301,
-    REMAINDER = 302,
-    SETS = 303,
-    QUICK_PLAY = 304,
-    REFEREE = 305,
-    INJURY = 306,
-    USING = 307,
-    NUMBER = 308,
-    ID = 309,
-    COACH = 310,
-    BUY = 311,
-    IS = 312,
-    STRING = 313
+    ALLSTAR = 276,
+    START_WHISTLE = 277,
+    END_WHISTLE = 278,
+    STRATEGY = 279,
+    PLAY = 280,
+    WIN = 281,
+    TIE = 282,
+    LOSE = 283,
+    PENALTY_SHOOTOUT = 284,
+    PRACTICE = 285,
+    ANNOUNCE = 286,
+    RESULT = 287,
+    TIMEOUT = 288,
+    SUBSTITUTE = 289,
+    INBOUNDS = 290,
+    OUTBOUNDS = 291,
+    LEADS = 292,
+    TRAILS = 293,
+    LEADS_OR_TIES = 294,
+    TRAILS_OR_TIES = 295,
+    SCORES = 296,
+    LOSES = 297,
+    MULTIPLIES = 298,
+    TACKLES = 299,
+    ANDGOAL = 300,
+    ORGOAL = 301,
+    NOTGOAL = 302,
+    REMAINDER = 303,
+    SETS = 304,
+    QUICK_PLAY = 305,
+    REFEREE = 306,
+    INJURY = 307,
+    USING = 308,
+    NUMBER = 309,
+    ID = 310,
+    COACH = 311,
+    BUY = 312,
+    IS = 313,
+    STRING = 314
   };
 #endif
 
@@ -112,7 +113,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 43 "SportS.y"
+#line 44 "SportS.y"
 
     int num;            // For numerical values
     char* id;           // For identifiers
@@ -120,7 +121,7 @@ union YYSTYPE
     struct astnode* ast;     // For AST nodes
     // Add other types as needed
 
-#line 124 "SportS.tab.h"
+#line 125 "SportS.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

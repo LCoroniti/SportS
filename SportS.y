@@ -7,6 +7,7 @@
 #include "vm/vm.h"
 #include <portaudio.h>
 
+
 extern int yylineno;
 extern FILE *yyin;
 int yylex(void);
@@ -23,16 +24,15 @@ struct astnode{
         int num;
         char* id;
         char* str;
-        //TODO: add other types as needed
-        //arr_t* arr;
-        //float flt;
+        arr_t* arr;
+        float flt;
     }val;
     struct astnode *child[5]; //change max number of children as needed
 };
 astnode_t* create_node(int type);
 
+void optimize_ast(astnode_t* node);
 int compile_ast(astnode_t* root);
-
 void print_ast_dot(astnode_t* node, int depth);
 void print_ast(astnode_t* node, int level);
 void whistle();
@@ -51,11 +51,11 @@ void whistle();
 %type <ast> program statement variable_declaration assignment function_declaration
 %type <ast> control_structure print_statement expression value function_call //comment include
 %type <ast> condition tie_or_lose_branch parameter_def parameter_call expression_list
-%type <ast> float datatype number string id boolean
+%type <ast> float datatype number string id boolean global_definition
 %type <ast> swap_statement
 
 %token <str> function val param_def param_call assign_member array_is array_member expr_list
-%token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL
+%token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL ALLSTAR
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
 %token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTE
 %token <str> INBOUNDS OUTBOUNDS LEADS TRAILS LEADS_OR_TIES TRAILS_OR_TIES
@@ -63,7 +63,7 @@ void whistle();
 %token <str> SETS QUICK_PLAY REFEREE INJURY USING
 %token <num> NUMBER
 %token <str> ID COACH BUY IS STRING
-//%token <str> FOUL OFFSIDE HANDBALL
+//%token <str> FOUL OFFSIDE
 
 //Define operator precedence and associativity here (TODO: is this right?)
 
@@ -81,12 +81,18 @@ void whistle();
 //TODO: include break (TIMEOUT) and continue (*name needed*) statements
 
 //TODO: datatypes not used yet ... problems in usage?
-    //add type checking
+    //TODO: add type checking
 //TODO: ANNOUNCE parameter_call in one print not for each one
 //TODO: call programs with parameters
 
+//TODO: gloabal variables
+
 start:
-    program { compile_ast($1);
+    program {
+    printf("\a");
+
+    optimize_ast($1);
+    compile_ast($1);
     print_ast($1, 0);
     print_ast_dot($1, 0);
     //whistle();
@@ -100,6 +106,7 @@ program:
 
 statement:
       variable_declaration //{ $$ = create_node(SET); $$->child[0] = $1; }
+    | global_definition //{ $$ = create_node(SET); $$->child[0] = $1; }
     | assignment //{ $$ = create_node(SET); $$->child[0] = $1; }
     | function_declaration //{ $$ = create_node(SET); $$->child[0] = $1; }
     | control_structure //{ $$ = create_node(CNTRL); $$->child[0] = $1; }
@@ -107,18 +114,19 @@ statement:
     | swap_statement //{ $$ = create_node(SUBSTITUTE); $$->child[0] = $1; }
     | function_call //{ $$ = create_node(PLAY); $$->child[0] = $1; }
     | condition
-//    | include //should I even support this?
-    //TODO get input from user
 
 
 //include:
 //    BUY '@' STRING
+global_definition:
+      'ALLSTAR' datatype id IS condition { $$ = create_node(ALLSTAR); $$->child[0] = $2; $$->child[1] = $3; $$->child[2] = $5; }
+    | 'ALLSTAR' id IS condition { $$ = create_node(ALLSTAR); $$->child[0] = NULL; $$->child[1] = $2; $$->child[2] = $4; }
 
 variable_declaration:
-      datatype id { $$ = create_node(ID); $$->child[1] = $2; } //TODO: change
-      | TEAM id { $$ = create_node(ID); $$->child[1] = $2; } //TODO: change
+      datatype id { $$ = create_node(ID); $$->child[1] = $2; }
+      | TEAM id { $$ = create_node(ID); $$->child[1] = $2; }
 
-assignment: //TODO: if assigned with eg INBOUNDS (condition) -> maybe put expression and conditon to one rule?
+assignment:
       datatype id IS condition { $$ = create_node(IS); $$->child[1] = $2; $$->child[2] = $4;}
       | id IS condition { $$ = create_node(IS); $$->child[1] = $1; $$->child[2] = $3;}
       | TEAM id IS '|' expression_list '|' { $$ = create_node(array_is); $$->child[1] = $2; $$->child[2] = $5; }
@@ -126,7 +134,7 @@ assignment: //TODO: if assigned with eg INBOUNDS (condition) -> maybe put expres
       | id '#' expression IS expression { $$ = create_node(assign_member); $$->child[0] = $1; $$->child[1] = $3; $$->child[2] = $5; }
 
 
-datatype: //TODO: set datatype as a child so i can use it in my compiler
+datatype:
       PLAYER { $$ = create_node(PLAYER); }
     | SCORE { $$ = create_node(SCORE); }
     | GOAL { $$ = create_node(GOAL); }
@@ -143,7 +151,7 @@ parameter_def:
 function_call:
       PLAY id USING '|' parameter_call '|' { $$ = create_node(PLAY); $$->child[0] = $2; $$->child[1] = $5; }
 
-parameter_call: //TODO: is there a problem using statement?
+parameter_call:
       parameter_call statement { $$ = create_node(param_call); $$->child[0] = $1; $$->child[1] = $2; }
     | statement { $$ = create_node(param_call); $$->child[0] = NULL; $$->child[1] = $1; }
     | %empty { $$ = NULL; }
@@ -174,10 +182,9 @@ condition:
 print_statement:
       ANNOUNCE '|' parameter_call '|'{ $$ = create_node(ANNOUNCE); $$->child[0] = $3; }
 
-//TODO: so far just for arrays, also add for other types?
+
 swap_statement:
         SUBSTITUTE expression '-' expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4;} //TODO: call it SUBSTITUTE_ARRAY?
-      //| SUBSTITUTE id WITH id { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4; $$->child[2] = NULL; }
 
 expression_list:
       expression_list expression { $$ = create_node(expr_list); $$->child[0] = $1; $$->child[1] = $2; }
@@ -187,10 +194,10 @@ expression:
      value REMAINDER expression { $$ = create_node(REMAINDER); $$->child[0] = $1; $$->child[1] = $3; }
     | value SCORES expression { $$ = create_node(SCORES); $$->child[0] = $1; $$->child[1] = $3; }
     | value LOSES expression { $$ = create_node(LOSES); $$->child[0] = $1; $$->child[1] = $3; }
-    | value MULTIPLIES expression { $$ = create_node(MULTIPLIES); $$->child[0] = $1; $$->child[1] = $3; } //TODO other keyword for MULTIPLIES!
+    | value MULTIPLIES expression { $$ = create_node(MULTIPLIES); $$->child[0] = $1; $$->child[1] = $3; }
     | value TACKLES expression { $$ = create_node(TACKLES); $$->child[0] = $1; $$->child[1] = $3; }
-    | value //{ $$ = create_node(val); $$->child[0] = $1; }
-    | function_call //{ $$ = create_node(PLAY); $$->child[0] = $1; }
+    | value
+    | function_call
     | id '#' expression { $$ = create_node(array_member); $$->child[0] = $1; $$->child[1] = $3; }
     | %empty { $$ = NULL; }
 
@@ -282,8 +289,79 @@ const char* get_node_type_name(int type) {
         case array_is: return "array_is";
         case assign_member: return "assign_member";
         case array_member: return "array_member";
+        case ALLSTAR: return "ALLSTAR";
         default: return "UNKNOWN";
     }
+}
+
+void optimize_ast(astnode_t* node) {
+    if (node == NULL) return;
+
+    for (int i = 0; i < 5; i++) {
+        optimize_ast(node->child[i]);
+    }
+
+    // Type checking and conversion
+    int hasFloat = 0;
+    for (int i = 0; i < 5; i++) {
+        //TODO: if child is id check if its value is a float
+
+        if (node->child[i] != NULL && node->child[i]->type == FLOAT) {
+            hasFloat = 1;
+            break;
+        }
+    }
+
+    if (hasFloat) {
+        for (int i = 0; i < 5; i++) {
+            if (node->child[i] != NULL && node->child[i]->type == NUMBER && node->type != FLOAT) {
+                astnode_t* fl = calloc(1, sizeof *node);
+                fl->type = FLOAT;
+                astnode_t* n1 = calloc(1, sizeof *node);
+                n1->type = NUMBER;
+                n1->val.num = node->child[i]->val.num;
+                astnode_t* n2 = calloc(1, sizeof *node);
+                n2->type = NUMBER;
+                n2->val.num = 0;
+                fl->child[0] = n1;
+                fl->child[1] = n2;
+                node->child[i] = fl;
+
+            }
+        }
+    }
+
+    //constant folding
+    if(node->type == SCORES || node->type == LOSES || node->type == MULTIPLIES || node->type == TACKLES || node->type == REMAINDER) {
+        if(node->child[0]->type == NUMBER && node->child[1]->type == NUMBER) {
+            int result;
+            switch (node->type) {
+                case SCORES:
+                    result = node->child[0]->val.num + node->child[1]->val.num;
+                    break;
+                case LOSES:
+                    result = node->child[0]->val.num - node->child[1]->val.num;
+                    break;
+                case MULTIPLIES:
+                    result = node->child[0]->val.num * node->child[1]->val.num;
+                    break;
+                case TACKLES:
+                    result = node->child[0]->val.num / node->child[1]->val.num;
+                    break;
+                case REMAINDER:
+                    result = node->child[0]->val.num % node->child[1]->val.num;
+                    break;
+                default:
+                    break;
+            }
+            node->type = NUMBER;
+            node->val.num = result;
+            node->child[0] = NULL;
+            node->child[1] = NULL;
+        }
+
+    }
+
 }
 
 void print_ast_dot(astnode_t* node, int depth) {
@@ -346,6 +424,9 @@ void print_ast(astnode_t* node, int level) {
         case ID:
             printf(", ID: %s\n", node->val.id);
             break;
+        case FLOAT:
+            printf(", Float: %d:%d\n", node->child[0]->val.num, node->child[1]->val.num);
+            break;
         // Handle other types as needed
         default:
             printf("\n");
@@ -358,12 +439,12 @@ void print_ast(astnode_t* node, int level) {
         }
     }
 }
-//TODO: figure out from where the variables are visible
 //TODO: delete commented code
 
 int compile_ast(astnode_t* root) {
     int c, nrparams, jmp, pc, jt;
     struct var *v;
+
 
     if (root == NULL) return 0;
     printf("Node Type: %s\n", get_node_type_name(root->type));
@@ -381,8 +462,6 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[1]);
             prog_register_function(p, root->child[0]->val.id, prog_next_pc(p));
             compile_ast(root->child[2]);
-            //Q: where do I get the value of parameter variables
-            //prog_add_num(p, 0);
             compile_ast(root->child[3]);
             prog_add_op(p, RET);
             prog_set_num(p, jmp, prog_next_pc(p));
@@ -422,13 +501,18 @@ int compile_ast(astnode_t* root) {
             }
             return c;
             break;
-        case IS: //TODO: use CREATEVAL?
+        case ALLSTAR:
+            compile_ast(root->child[2]);
+            v = var_add_global(root->child[1]->val.id);
+            prog_add_num(p, v->nr);
+            prog_add_op(p, SETVAR);
+            break;
+
+        case IS:
             compile_ast(root->child[2]);
             v = var_get_or_addlocal(root->child[1]->val.id);
             prog_add_num(p, v->nr);
             prog_add_op(p, SETVAR);
-            //prog_add_num(p, v->nr);
-            //prog_add_op(p, GETVAR); //unnecessary?
             break;
         case array_is:
             nrparams = 0;
@@ -455,7 +539,7 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[1]); //number
             compile_ast(root->child[0]); //id
             //prog_add_op(p, GETVAR);      //array on stack
-            prog_add_op(p, INDEX1); //TODO: is this working or do I need to put the array on the stack
+            prog_add_op(p, INDEX1);
             break;
         case val:
             compile_ast(root->child[0]);
@@ -569,7 +653,6 @@ int compile_ast(astnode_t* root) {
             break;
         case SUBSTITUTE:
             //is working for array members and ids
-            //TODO: definitly an extra feature of the language!! (lot of work)
 
             //e.g. array:  SUBSTITUTE list #startIndex WITH list #i
             //or: SUSTITUTE expression WITH expression

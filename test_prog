@@ -1,45 +1,16 @@
+ALLSTAR d IS 10
 
-STRATEGY test USING | |
+STRATEGY test USING |  |
 START_WHISTLE
-    SCORE i IS 0
-    PENALTY_SHOOTOUT i TRAILS 4
-    START_WHISTLE
-
-    PLAYER operator IS PLAY random USING | 4 |
-    ANNOUNCE | <Operator: > operator |
-    WIN operator INBOUNDS 0
-    START_WHISTLE
-        operator IS <SCORES>
-        ANNOUNCE | <Operator0: > operator |
-    END_WHISTLE
-    TIE operator INBOUNDS 1
-    START_WHISTLE
-        operator IS <LOSES>
-        ANNOUNCE | <Operator1: > operator |
-    END_WHISTLE
-    TIE operator INBOUNDS 2
-    START_WHISTLE
-        operator IS <MULTIPLIES>
-
-        ANNOUNCE | <Operator2: > operator |
-    END_WHISTLE
-    TIE operator INBOUNDS 3
-    START_WHISTLE
-        operator IS <TACKLES>
-        ANNOUNCE | <Operator3: > operator |
-    END_WHISTLE
-
-    ANNOUNCE | <Operator: > operator <i: > i |
-
-    i IS i SCORES 1
-    END_WHISTLE
+    a IS 1
+    b IS 2
+    *COACH this is a comment
+    SCORE c IS a SCORES b
+    e IS d
+    ANNOUNCE | e |
 
 RESULT
 END_WHISTLE
 
+
 PLAY test USING | |
-
-
-
-
-

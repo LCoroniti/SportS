@@ -109,6 +109,14 @@ int val_cmp (val_t *v1, val_t *v2) {
   if (v2->type == v1->type) {
     return val_ops[type].cmp(v1, v2);
   }
+  if (v1->type == T_REAL && v2->type == T_NUM) {
+      val_t *v2_real = val_conv(T_REAL, v2);
+      return val_ops[T_REAL].cmp(v1, v2_real);
+  }
+  if (v1->type == T_NUM && v2->type == T_REAL) {
+      val_t *v1_real = val_conv(T_REAL, v1);
+      return val_ops[T_REAL].cmp(v1_real, v2);
+  }
 
   return -1;
 }
@@ -124,7 +132,7 @@ int val_to_bool (val_t *v) {
 val_t *val_index (val_t *val, val_t *i) {
   int type = val->type;
   if (!val_ops[type].index)
-    return &val_undef;
+    return &val_undef; //TODO: return error or warning for each val_undef return
   else
     return val_ops[type].index(val, i);
 }
@@ -153,8 +161,10 @@ char *val_to_cstring (val_t *val) {
 val_t *val_conv (int type, val_t *val) {
   if (val->type == type)
     return val;
-  if (val_ops[type].conv)
-    return val_ops[type].conv(val);
+  if (val_ops[type].conv) {
+      val_t *v = val_ops[type].conv(val);
+      return v;
+  }
   else
     return &val_undef;
 }
@@ -162,24 +172,46 @@ val_t *val_conv (int type, val_t *val) {
 
 val_t *val_add (val_t *v1, val_t *v2) {
   val_t *ret;
-
+  //if one is real and the other is num, convert the num to real
+  //if one is str and the other is not str, convert the other to str
   switch (v1->type) {
     case T_STR:
-      if (v2->type != T_STR)
-        return &val_undef;
+      if (v2->type != T_STR){
+        val_t *v2_str = val_conv(T_STR, v2);
+        if (v2_str->type == T_UNDEF) {
+          return &val_undef;
+        }
+        return val_add(v1, v2_str);
+      }
       ret = val_dup(v1);
       str_add_buf(ret->u.str, v2->u.str->buf, v2->u.str->len);
       return ret;
 
     case T_NUM:
-      if (v2->type != T_NUM)
-        return &val_undef;
+      if (v2->type != T_NUM) {
+          if (v2->type == T_REAL) {
+              val_t *v1_real = val_conv(T_REAL, v1);
+              return val_add(v1_real, v2);
+          } else if (v2->type == T_STR) {
+              val_t *v1_str = val_conv(T_STR, v1);
+              return val_add(v1_str, v2);
+          }
+          return &val_undef;
+      }
       ret = v_num_new_int(v1->u.num + v2->u.num);
       return ret;
     
     case T_REAL:
-      if (v2->type != T_REAL)
-        return &val_undef;
+      if (v2->type != T_REAL) {
+          if (v2->type == T_NUM) {
+              val_t *v2_real = val_conv(T_REAL, v2);
+              return val_add(v1, v2_real);
+          } else if (v2->type == T_STR) {
+              val_t *v1_str = val_conv(T_STR, v1);
+              return val_add(v1_str, v2);
+          }
+          return &val_undef;
+      }
       ret = v_real_new_double(v1->u.real + v2->u.real);
       return ret;
     

@@ -57,6 +57,8 @@ val_t *v_real_conv (val_t *v) {
      ptr = v->u.str->buf;
      double nr = atof(ptr);
      return v_real_new_double(nr);
+    case T_NUM:
+        return v_real_new_double(v->u.num);
    default:
     return &val_undef;
  }
