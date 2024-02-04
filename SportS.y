@@ -13,12 +13,10 @@ extern FILE *yyin;
 int yylex(void);
 void yyerror(const char *s) {
     fprintf(stderr, "Line %d: %s\n", yylineno, s);
-    //TODO: additional logic here to handle diffferent types of errors
 }
 
 typedef struct astnode astnode_t;
 struct astnode{
-    // Define your AST node structure here
     int type;
     union {
         int num;
@@ -27,7 +25,7 @@ struct astnode{
         arr_t* arr;
         float flt;
     }val;
-    struct astnode *child[5]; //change max number of children as needed
+    struct astnode *child[5];
 };
 astnode_t* create_node(int type);
 
@@ -41,31 +39,31 @@ void whistle();
 %define parse.error verbose
 
 %union {
-    int num;            // For numerical values
-    char* id;           // For identifiers
-    char* str;          // For string values
-    struct astnode* ast;     // For AST nodes
-    // Add other types as needed
+    int num;
+    char* id;
+    char* str;
+    struct astnode* ast;
 }
 
 %type <ast> program statement variable_declaration assignment function_declaration
-%type <ast> control_structure print_statement expression value function_call //comment include
+%type <ast> control_structure print_statement expression value function_call
 %type <ast> condition tie_or_lose_branch parameter_def parameter_call expression_list
-%type <ast> float datatype number string id boolean global_definition
+%type <ast> float datatype number string id boolean global_definition error aid
 %type <ast> swap_statement
 
 %token <str> function val param_def param_call assign_member array_is array_member expr_list
-%token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL ALLSTAR
+%token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL ALLSTAR AID
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
 %token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTE
 %token <str> INBOUNDS OUTBOUNDS LEADS TRAILS LEADS_OR_TIES TRAILS_OR_TIES
 %token <str> SCORES LOSES MULTIPLIES TACKLES ANDGOAL ORGOAL NOTGOAL REMAINDER
-%token <str> SETS QUICK_PLAY REFEREE INJURY USING
+%token <str> SETS REFEREE INJURY USING
 %token <num> NUMBER
-%token <str> ID COACH BUY IS STRING
+%token <str> ID COACH IS STRING
 //%token <str> FOUL OFFSIDE
 
-//Define operator precedence and associativity here (TODO: is this right?)
+//TODO: is this right?
+// Define operator precedence and associativity here
 
 %left ANDGOAL ORGOAL
 %left SCORES LOSES
@@ -89,13 +87,12 @@ void whistle();
 
 start:
     program {
-    printf("\a");
-
+    //TODO: add sound
+    //whistle();
     optimize_ast($1);
     compile_ast($1);
     print_ast($1, 0);
     print_ast_dot($1, 0);
-    //whistle();
     }
 
 
@@ -105,22 +102,25 @@ program:
 
 
 statement:
-      variable_declaration //{ $$ = create_node(SET); $$->child[0] = $1; }
-    | global_definition //{ $$ = create_node(SET); $$->child[0] = $1; }
-    | assignment //{ $$ = create_node(SET); $$->child[0] = $1; }
-    | function_declaration //{ $$ = create_node(SET); $$->child[0] = $1; }
-    | control_structure //{ $$ = create_node(CNTRL); $$->child[0] = $1; }
-    | print_statement //{ $$ = create_node(ANNOUNCE); $$->child[0] = $1; }
-    | swap_statement //{ $$ = create_node(SUBSTITUTE); $$->child[0] = $1; }
-    | function_call //{ $$ = create_node(PLAY); $$->child[0] = $1; }
+      variable_declaration
+    | global_definition
+    | assignment
+    | function_declaration
+    | control_structure
+    | print_statement
+    | swap_statement
+    | function_call
     | condition
 
 
-//include:
-//    BUY '@' STRING
 global_definition:
-      'ALLSTAR' datatype id IS condition { $$ = create_node(ALLSTAR); $$->child[0] = $2; $$->child[1] = $3; $$->child[2] = $5; }
-    | 'ALLSTAR' id IS condition { $$ = create_node(ALLSTAR); $$->child[0] = NULL; $$->child[1] = $2; $$->child[2] = $4; }
+      ALLSTAR datatype aid IS condition { $$ = create_node(ALLSTAR); $$->child[0] = $2; $$->child[1] = $3; $$->child[2] = $5; }
+    | ALLSTAR aid IS condition { $$ = create_node(ALLSTAR); $$->child[0] = NULL; $$->child[1] = $2; $$->child[2] = $4; }
+    | aid IS condition { $$ = create_node(ALLSTAR); $$->child[0] = NULL; $$->child[1] = $1; $$->child[2] = $3; }
+
+aid:
+    AID { $$ = create_node(AID); $$->val.id = $1; }
+
 
 variable_declaration:
       datatype id { $$ = create_node(ID); $$->child[1] = $2; }
@@ -184,7 +184,7 @@ print_statement:
 
 
 swap_statement:
-        SUBSTITUTE expression '-' expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4;} //TODO: call it SUBSTITUTE_ARRAY?
+        SUBSTITUTE expression '-' expression { $$ = create_node(SUBSTITUTE); $$->child[0] = $2; $$->child[1] = $4;}
 
 expression_list:
       expression_list expression { $$ = create_node(expr_list); $$->child[0] = $1; $$->child[1] = $2; }
@@ -217,7 +217,8 @@ string:
       STRING { $$ = create_node(STRING); $$->val.str = $1; }
 
 id:
-      ID { $$ = create_node(ID); $$->val.id = $1; }
+      AID { $$ = create_node(AID); $$->val.id = $1; }
+    | ID { $$ = create_node(ID); $$->val.id = $1; }
 
 boolean:
       IN { $$ = create_node(IN); $$->val.str = $1; }
@@ -249,6 +250,7 @@ astnode_t* create_node(int type) {
 const char* get_node_type_name(int type) {
     switch (type) {
         case PROGRAM: return "PROGRAM";
+        case AID: return "AID";
         case ID: return "ID";
         case NUMBER: return "NUMBER";
         case FLOAT: return "FLOAT";
@@ -384,7 +386,6 @@ void print_ast_dot(astnode_t* node, int depth) {
         case ID:
             fprintf(dot, "\\nID: %s", node->val.id);
             break;
-        // Handle other types as needed
         default:
             break;
     }
@@ -427,7 +428,6 @@ void print_ast(astnode_t* node, int level) {
         case FLOAT:
             printf(", Float: %d:%d\n", node->child[0]->val.num, node->child[1]->val.num);
             break;
-        // Handle other types as needed
         default:
             printf("\n");
     }
@@ -439,7 +439,6 @@ void print_ast(astnode_t* node, int level) {
         }
     }
 }
-//TODO: delete commented code
 
 int compile_ast(astnode_t* root) {
     int c, nrparams, jmp, pc, jt;
@@ -453,7 +452,6 @@ int compile_ast(astnode_t* root) {
         case PROGRAM:
             compile_ast(root->child[0]);
             compile_ast(root->child[1]);
-            //prog_add_op(p, DISCARD);
             break;
         case function:
             jmp = prog_add_num(p, -1);
@@ -465,7 +463,6 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[3]);
             prog_add_op(p, RET);
             prog_set_num(p, jmp, prog_next_pc(p));
-            //prog_add_num(p, 0);
             break;
         case PLAY:
             nrparams = 0;
@@ -502,10 +499,10 @@ int compile_ast(astnode_t* root) {
             return c;
             break;
         case ALLSTAR:
-            compile_ast(root->child[2]);
+            compile_ast(root->child[2]); //value
             v = var_add_global(root->child[1]->val.id);
             prog_add_num(p, v->nr);
-            prog_add_op(p, SETVAR);
+            prog_add_op(p, SETGLOBAL);
             break;
 
         case IS:
@@ -526,7 +523,6 @@ int compile_ast(astnode_t* root) {
             prog_add_num(p, v->nr);
             prog_add_op(p, SETVAR);
             prog_add_num(p, v->nr);
-            prog_add_op(p, GETVAR); //unnecessary?
             break;
         case assign_member:
             compile_ast(root->child[2]); //value (expression)
@@ -538,7 +534,6 @@ int compile_ast(astnode_t* root) {
         case array_member:
             compile_ast(root->child[1]); //number
             compile_ast(root->child[0]); //id
-            //prog_add_op(p, GETVAR);      //array on stack
             prog_add_op(p, INDEX1);
             break;
         case val:
@@ -554,7 +549,11 @@ int compile_ast(astnode_t* root) {
             prog_add_num(p, root->child[0]->val.num);
             prog_add_op(p, MKFLOAT);
             break;
-
+        case AID:
+            v = var_get(root->val.id);
+            prog_add_num(p, v->nr);
+            prog_add_op(p, GETGLOBAL);
+            break;
         case ID:
             v = var_get_or_addlocal(root->val.id);
             prog_add_num(p, v->nr);
@@ -572,8 +571,6 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, CONDELSE);
             compile_ast(root->child[2]);
             prog_add_op(p, CONDEND);
-            //prog_add_op(p, CONDELSE);
-            //prog_add_num(p, 0);
             break;
         case TIE:
             compile_ast(root->child[0]);
@@ -582,14 +579,12 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[2]);
             prog_add_op(p, CONDELSE);
             prog_add_op(p, CONDEND);
-            //prog_add_num(p, 0);
             break;
         case LOSE:
             compile_ast(root->child[0]);
             prog_add_op(p, CONDELSE);
             compile_ast(root->child[1]);
             prog_add_op(p, CONDEND);
-            //prog_add_num(p, 0);
             break;
         case PENALTY_SHOOTOUT:
             prog_add_op(p, LOOPBEGIN);
@@ -597,7 +592,6 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, LOOPBODY);
             compile_ast(root->child[1]);
             prog_add_op(p, LOOPEND);
-            //prog_add_num(p, 0);
             break;
         case OUTBOUNDS:
             compile_ast(root->child[1]);
@@ -640,43 +634,24 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, SUB);
             break;
         case ANNOUNCE:
-            //TODO: print all together
             nrparams = 0;
             if (root->child[0] != NULL) {
                 nrparams = compile_ast(root->child[0])+1;
             }
-            //print for number of nrparams
-            for (int i = 0; i < nrparams; i++) {
-                prog_add_op(p, PRINT);
-            }
-            //prog_add_num(p, nrparams);
+            //print the n top values from the stack in one line
+            prog_add_num(p, nrparams);
+            prog_add_op(p, PRINTN);
             break;
         case SUBSTITUTE:
             //is working for array members and ids
 
-            //e.g. array:  SUBSTITUTE list #startIndex WITH list #i
-            //or: SUSTITUTE expression WITH expression
-
-
-            //chil[0] and child[1] are expression, this can be a value(number, string,..), id or an array_member
-            //when I call compile_ast on child[0] and child[1]:
-                //if value the value is on the stack (therefore is subsitute not ment as you can use assign for values)
-                //if id the value of id is on the stack / what if id is an array
-                //if array_member the value of the array_member is on the stack
-
-            //stack: id1, value0, id0, value1, setvar, -> id1, value0, setvar ->
-
-            //stack: value0, (index), id1, value1, (index), id0, setvar or indexas -> value0, id1, setvar or indexas ->
-            //setvar: Set variable OP1 to OP2
-            //indexas: Assign value OP1 at index OP2 with OP3 stack: value, index, id, indexas
-
-            // need to differentiate between id and array_member
+            //e.g. array:  SUBSTITUTE list #startIndex - list #i
+            //or: SUSTITUTE expression - expression
 
             //push value of child[0] on the stack
             compile_ast(root->child[0]);
 
             //push id of child[1] on the stack
-
             if(root->child[1]->type == ID) {
                 v = var_get_or_addlocal(root->child[1]->val.id);
                 prog_add_num(p, v->nr); //pushes the mapped number of the id on the stack
@@ -746,7 +721,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Could not open file: %s\n", strerror(errno));
         return 1;
     }
-
+    int yylineno = 1;
     int st = yyparse();
     prog_dump(p);
     if (st == 0) {

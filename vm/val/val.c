@@ -19,6 +19,13 @@ val_t val_undef = {
   .marked = 1
 };
 
+val_t *val_error (error_type_t type, char *msg) {
+  val_t *v = val_new(T_ERROR);
+  v->u.error.type = type;
+  v->u.error.msg = strdup(msg);
+  return v;
+}
+
 void val_init (void) {
   val_register_str();
   val_register_num();
@@ -132,7 +139,7 @@ int val_to_bool (val_t *v) {
 val_t *val_index (val_t *val, val_t *i) {
   int type = val->type;
   if (!val_ops[type].index)
-    return &val_undef; //TODO: return error or warning for each val_undef return
+    return &val_undef;
   else
     return val_ops[type].index(val, i);
 }
@@ -165,15 +172,15 @@ val_t *val_conv (int type, val_t *val) {
       val_t *v = val_ops[type].conv(val);
       return v;
   }
-  else
-    return &val_undef;
+  else {
+
+      return &val_undef;
+  }
 }
 
 
 val_t *val_add (val_t *v1, val_t *v2) {
   val_t *ret;
-  //if one is real and the other is num, convert the num to real
-  //if one is str and the other is not str, convert the other to str
   switch (v1->type) {
     case T_STR:
       if (v2->type != T_STR){
@@ -236,14 +243,24 @@ val_t *val_sub (val_t *v1, val_t *v2) {
 
   switch (v1->type) {
     case T_NUM:
-      if (v2->type != T_NUM)
-        return &val_undef;
+      if (v2->type != T_NUM) {
+          if (v2->type == T_REAL) {
+              val_t *v1_real = val_conv(T_REAL, v1);
+              return val_sub(v1_real, v2);
+          }
+          return &val_undef;
+      }
       ret = v_num_new_int(v1->u.num - v2->u.num);
       return ret;
     
     case T_REAL:
-      if (v2->type != T_REAL)
-        return &val_undef;
+      if (v2->type != T_REAL) {
+            if (v2->type == T_NUM) {
+                val_t *v2_real = val_conv(T_REAL, v2);
+                return val_sub(v1, v2_real);
+            }
+          return &val_undef;
+      }
       ret = v_real_new_double(v1->u.real - v2->u.real);
       return ret;
     
@@ -269,13 +286,23 @@ val_t *val_mul (val_t *v1, val_t *v2) {
       return ret;
 
     case T_REAL:
-      if (v2->type != T_REAL)
-        return &val_undef;
+      if (v2->type != T_REAL) {
+            if (v2->type == T_NUM) {
+                val_t *v2_real = val_conv(T_REAL, v2);
+                return val_mul(v1, v2_real);
+            }
+          return &val_undef;
+      }
       return v_real_new_double(v1->u.real * v2->u.real);
 
     case T_NUM:
-      if (v2->type != T_NUM)
-        return &val_undef;
+      if (v2->type != T_NUM) {
+            if (v2->type == T_REAL) {
+                val_t *v1_real = val_conv(T_REAL, v1);
+                return val_mul(v1_real, v2);
+            }
+          return &val_undef;
+      }
       ret = v_num_new_int(v1->u.num * v2->u.num);
       return ret;
     
@@ -301,14 +328,31 @@ val_t *val_div (val_t *v1, val_t *v2) {
 
   switch (v1->type) {
     case T_NUM:
-      if (v2->type != T_NUM)
-        return &val_undef;
+      if (v2->type != T_NUM) {
+            if (v2->type == T_REAL) {
+                val_t *v1_real = val_conv(T_REAL, v1);
+                return val_div(v1_real, v2);
+            }
+          return &val_undef;
+      }
+      //check if v2 is 0
+        if (v2->u.num == 0) {
+            return val_error(ERR_DIV_ZERO, "Division by zero");
+        }
       ret = v_num_new_int(v1->u.num / v2->u.num);
       return ret;
 
      case T_REAL:
-      if (v2->type != T_REAL)
-        return &val_undef;
+      if (v2->type != T_REAL) {
+            if (v2->type == T_NUM) {
+                val_t *v2_real = val_conv(T_REAL, v2);
+                return val_div(v1, v2_real);
+            }
+          return &val_undef;
+      }
+      if (v2->u.real == 0.0) {
+          return val_error(ERR_DIV_ZERO, "Red Card: Division by zero");
+      }
       return v_real_new_double(v1->u.real / v2->u.real);
    
     default:

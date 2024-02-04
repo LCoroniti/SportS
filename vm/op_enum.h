@@ -1,4 +1,5 @@
 typedef struct exec exec_t;
+void op_PRINTN(exec_t *);
 void op_MKFLOAT(exec_t *);
 void op_mymul(exec_t *);
 void op_add(exec_t *);
@@ -52,6 +53,7 @@ void op_jumprel(exec_t *);
 void op_noop(exec_t *);
 enum opcodes {
   INVALID,
+  PRINTN,
   MKFLOAT,
   MYMUL,
   ADD,

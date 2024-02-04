@@ -170,6 +170,9 @@ OPCODE(add) {
   val_t *a1 = POP;
   val_t *a2 = POP;
   val_t *r = val_add(a1, a2);
+  if(r->type == T_UNDEF){
+      vmerror(E_WARN, exec, "Yellow Card - Undefined result from add");
+  }
   PUSH(r);
 }
 
@@ -178,6 +181,9 @@ OPCODE(sub) {
   val_t *a1 = POP;
   val_t *a2 = POP;
   val_t *r = val_sub(a1, a2);
+  if(r->type == T_UNDEF){
+      vmerror(E_WARN, exec, "Yellow Card - Undefined result from sub");
+  }
   PUSH(r);
 }
 
@@ -186,6 +192,9 @@ OPCODE(mul) {
   val_t *a1 = POP;
   val_t *a2 = POP;
   val_t *r = val_mul(a1, a2);
+    if(r->type == T_UNDEF){
+        vmerror(E_WARN, exec, "Yellow Card - Undefined result from mul");
+    }
   PUSH(r);
 }
 
@@ -194,6 +203,13 @@ OPCODE(divide) {
   val_t *a1 = POP;
   val_t *a2 = POP;
   val_t *r = val_div(a1, a2);
+  if(r->type == T_ERROR){
+    vmerror(E_ERR, exec, r->u.error.msg);
+    val_free(r);
+  }
+  if(r->type == T_UNDEF){
+      vmerror(E_WARN, exec, "Yellow Card - Undefined result from div");
+  }
   PUSH(r);
 }
 

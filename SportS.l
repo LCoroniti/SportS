@@ -1,9 +1,10 @@
 %{
-#include "SportS.tab.h" // Ensure this header is correct for your parser definitions
+#include "SportS.tab.h"
 %}
 
 %option noinput nounput noyywrap yylineno
 
+ALLSTAR          "ALLSTAR"
 PLAYER           "PLAYER"
 SCORE            "SCORE"
 GOAL             "GOAL"
@@ -43,14 +44,16 @@ QUICK_PLAY       "QUICK_PLAY"
 REFEREE          "REFEREE"
 INJURY           "INJURY"
 USING            "USING"
-COACH            "*COACH"[^\n]*
+COACH            ";COACH"[^\n]*
 BUY              "BUY"
 NUMBER           [0-9]+
+AID              "*"[a-zA-Z_][a-zA-Z0-9_]*
 ID               [a-zA-Z_][a-zA-Z0-9_]*
 STRING           \<[^\>]*\>
 
 %%
 
+{ALLSTAR}          { return ALLSTAR; }
 {PLAYER}           { return PLAYER; }
 {SCORE}            { return SCORE; }
 {GOAL}             { return GOAL; }
@@ -100,9 +103,13 @@ STRING           \<[^\>]*\>
                        yylval.str[len] = '\0'; // Null-terminate the string
                        return STRING;
                    }
+{AID}              { yylval.id = strdup(yytext); return AID; }
 {ID}               { yylval.id = strdup(yytext); return ID; }
-(\ |\n|\r|\t)
-.                  { return yytext[0]; }
+(\ |\r|\t)
+\n                { yylineno++; }
+.                 {
+                    return yytext[0];
+                  }
 
 
 

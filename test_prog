@@ -1,16 +1,10 @@
-ALLSTAR d IS 10
-
-STRATEGY test USING |  |
+STRATEGY test USING | b d |
 START_WHISTLE
-    a IS 1
-    b IS 2
-    *COACH this is a comment
-    SCORE c IS a SCORES b
-    e IS d
-    ANNOUNCE | e |
+    TEAM t IS | 1 2 3 |
+    ANNOUNCE | a b c d |
 
 RESULT
 END_WHISTLE
 
 
-PLAY test USING | |
+PLAY test USING | 4 5  6|

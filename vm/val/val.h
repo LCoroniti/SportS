@@ -21,8 +21,19 @@ enum valtype {
   T_REAL,
   T_ARR,
   T_MAP,
-  T_MAX
+  T_MAX,
+  T_ERROR
 };
+
+typedef enum {
+    ERR_NONE = 0,
+    ERR_DIV_ZERO,
+}error_type_t;
+
+typedef struct {
+    error_type_t type;
+    char *msg;
+}error_t;
 
 typedef int num_t;
 typedef double real_t;
@@ -39,6 +50,7 @@ struct val {
     str_t *str;
     arr_t *arr;
     map_t *map;
+    error_t error;
   } u;
   struct val *next;
 };

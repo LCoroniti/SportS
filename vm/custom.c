@@ -19,16 +19,25 @@ NATIVE(myadd) {
   return val_add(v1, v2);
 }
 
+OPCODE(PRINTN) {
+    val_t *nr = POP;
+    int n = nr->u.num;
+    val_t *buf = v_str_create();
+    for(int i = 0; i < n; i++){
+        val_t *v = POP;
+        val_t *str = val_to_string(v);
+        str = val_add(str, v_str_new_cstr(" "));
+        buf = val_add(str, buf);
+    }
+    printf("%s\n", cstr(buf));
+}
+
 OPCODE(MKFLOAT) {
-  //I have the on the top of the stack the value before the point and on the second the value after the point
     val_t *v1 = POP;
     val_t *v2 = POP;
-    //I have to convert the two values to string and then concatenate them
     val_t *str1 = val_conv(T_STR, v1);
     val_t *str2 = val_conv(T_STR, v2);
-    //create a val_t with the point
     val_t *strp = v_str_new_cstr(".");
-    //I have to concatenate the two strings
     val_t *str3 = val_add(str1, strp);
     str3 = val_add(str3, str2);
     val_t *v3 = val_conv(T_REAL,str3);
