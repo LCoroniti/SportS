@@ -39,6 +39,16 @@ struct var *var_add_global (char *id) {
   return _var_add(id, &varalloc.globals, &varalloc.nrglobals, 1);
 }
 
+struct var *var_get_or_addglobal (char *id) {
+  struct var *ret = _var_lookup(id, varalloc.globals, varalloc.nrglobals, 0);
+  if (!ret)
+    ret = _var_lookup(id, varalloc.locals, varalloc.nrlocals, 0);
+  if (!ret)
+    ret = _var_add(id, &varalloc.globals, &varalloc.nrglobals, 1);
+
+  return ret;
+}
+
 struct var *var_add_local (char *id) {
   return _var_add(id, &varalloc.locals, &varalloc.nrlocals, 0);
 }

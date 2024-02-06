@@ -1,10 +1,11 @@
-STRATEGY test USING | b d |
+STRATEGY test USING | |
 START_WHISTLE
-    TEAM t IS | 1 2 3 |
-    ANNOUNCE | a b c d |
+    a IS 4:3
+
+    ANNOUNCE | <a:> a |
 
 RESULT
 END_WHISTLE
 
 
-PLAY test USING | 4 5  6|
+PLAY test USING | |

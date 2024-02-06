@@ -5,7 +5,8 @@
 #include <getopt.h>
 #include <errno.h>
 #include "vm/vm.h"
-#include <portaudio.h>
+#include "sound.h"
+
 
 
 extern int yylineno;
@@ -48,11 +49,11 @@ void whistle();
 %type <ast> program statement variable_declaration assignment function_declaration
 %type <ast> control_structure print_statement expression value function_call
 %type <ast> condition tie_or_lose_branch parameter_def parameter_call expression_list
-%type <ast> float datatype number string id boolean global_definition error aid
+%type <ast> float datatype number string id global_definition error aid
 %type <ast> swap_statement
 
 %token <str> function val param_def param_call assign_member array_is array_member expr_list
-%token <str> IN OUT PROGRAM FLOAT PLAYER SCORE GOAL TEAM SET CNTRL ALLSTAR AID
+%token <str> IN OUT PROGRAM FLOAT PLAYER SCORE TEAM SET CNTRL ALLSTAR AID
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
 %token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTE
 %token <str> INBOUNDS OUTBOUNDS LEADS TRAILS LEADS_OR_TIES TRAILS_OR_TIES
@@ -74,26 +75,20 @@ void whistle();
 
 %%
 //TODO: as an extra add sounds (is this even possible?) would support the sport theme
-//TODO: error handling
 
 //TODO: include break (TIMEOUT) and continue (*name needed*) statements
 
-//TODO: datatypes not used yet ... problems in usage?
-    //TODO: add type checking
-//TODO: ANNOUNCE parameter_call in one print not for each one
-//TODO: call programs with parameters
 
-//TODO: gloabal variables
 
 start:
     program {
-    //TODO: add sound
-    //whistle();
-    optimize_ast($1);
-    compile_ast($1);
-    print_ast($1, 0);
-    print_ast_dot($1, 0);
-    }
+                //TODO: add sound
+                //whistle();
+                optimize_ast($1);
+                compile_ast($1);
+                print_ast($1, 0);
+                print_ast_dot($1, 0);
+            }
 
 
 program:
@@ -137,7 +132,6 @@ assignment:
 datatype:
       PLAYER { $$ = create_node(PLAYER); }
     | SCORE { $$ = create_node(SCORE); }
-    | GOAL { $$ = create_node(GOAL); }
 
 function_declaration:
       STRATEGY id USING '|' parameter_def '|' START_WHISTLE program RESULT expression END_WHISTLE
@@ -167,15 +161,15 @@ tie_or_lose_branch:
     | %empty { $$ = NULL; }
 
 condition:
-      expression ANDGOAL expression { $$ = create_node(ANDGOAL); $$->child[0] = $1; $$->child[1] = $3; }
-    | expression ORGOAL expression { $$ = create_node(ORGOAL); $$->child[0] = $1; $$->child[1] = $3; }
-    | NOTGOAL expression { $$ = create_node(NOTGOAL); $$->child[0] = $2; }
-    | expression INBOUNDS expression { $$ = create_node(INBOUNDS); $$->child[0] = $1; $$->child[1] = $3; }
-    | expression OUTBOUNDS expression { $$ = create_node(OUTBOUNDS); $$->child[0] = $1; $$->child[1] = $3; }
-    | expression LEADS expression { $$ = create_node(LEADS); $$->child[0] = $1; $$->child[1] = $3; }
-    | expression TRAILS expression { $$ = create_node(TRAILS); $$->child[0] = $1; $$->child[1] = $3; }
-    | expression LEADS_OR_TIES expression { $$ = create_node(LEADS_OR_TIES); $$->child[0] = $1; $$->child[1] = $3; }
-    | expression TRAILS_OR_TIES expression { $$ = create_node(TRAILS_OR_TIES); $$->child[0] = $1; $$->child[1] = $3; }
+      condition ANDGOAL condition { $$ = create_node(ANDGOAL); $$->child[0] = $1; $$->child[1] = $3; }
+    | condition ORGOAL condition { $$ = create_node(ORGOAL); $$->child[0] = $1; $$->child[1] = $3; }
+    | NOTGOAL condition { $$ = create_node(NOTGOAL); $$->child[0] = $2; }
+    | condition INBOUNDS condition { $$ = create_node(INBOUNDS); $$->child[0] = $1; $$->child[1] = $3; }
+    | condition OUTBOUNDS condition { $$ = create_node(OUTBOUNDS); $$->child[0] = $1; $$->child[1] = $3; }
+    | condition LEADS condition { $$ = create_node(LEADS); $$->child[0] = $1; $$->child[1] = $3; }
+    | condition TRAILS condition { $$ = create_node(TRAILS); $$->child[0] = $1; $$->child[1] = $3; }
+    | condition LEADS_OR_TIES condition { $$ = create_node(LEADS_OR_TIES); $$->child[0] = $1; $$->child[1] = $3; }
+    | condition TRAILS_OR_TIES condition { $$ = create_node(TRAILS_OR_TIES); $$->child[0] = $1; $$->child[1] = $3; }
     | expression
 
 
@@ -207,7 +201,6 @@ value:
     | float
     | string
     | id
-    | boolean
 
 
 number:
@@ -219,10 +212,6 @@ string:
 id:
       AID { $$ = create_node(AID); $$->val.id = $1; }
     | ID { $$ = create_node(ID); $$->val.id = $1; }
-
-boolean:
-      IN { $$ = create_node(IN); $$->val.str = $1; }
-    | OUT { $$ = create_node(OUT); $$->val.str = $1; }
 
 float:
       number ':' number { $$ = create_node(FLOAT); $$->child[0] = $1; $$->child[1] = $3; }
@@ -282,7 +271,6 @@ const char* get_node_type_name(int type) {
         case CNTRL: return "CNTRL";
         case PLAYER: return "PLAYER";
         case SCORE: return "SCORE";
-        case GOAL: return "GOAL";
         case param_def: return "parameter_def";
         case param_call: return "parameter_call";
         case expr_list: return "expression_list";
@@ -440,6 +428,7 @@ void print_ast(astnode_t* node, int level) {
     }
 }
 
+//TODO: handle all AST nodes
 int compile_ast(astnode_t* root) {
     int c, nrparams, jmp, pc, jt;
     struct var *v;
@@ -473,7 +462,6 @@ int compile_ast(astnode_t* root) {
             c = prog_new_constant(p, v_str_new_cstr(root->child[0]->val.id));
             prog_add_num(p, c);
             prog_add_op(p, CONSTANT);
-            //TODO: set the parameter variables with the values from the parameter call
             prog_add_op(p, CALL);
             break;
         case param_def:
@@ -500,7 +488,7 @@ int compile_ast(astnode_t* root) {
             break;
         case ALLSTAR:
             compile_ast(root->child[2]); //value
-            v = var_add_global(root->child[1]->val.id);
+            v = var_get_or_addglobal(root->child[1]->val.id);
             prog_add_num(p, v->nr);
             prog_add_op(p, SETGLOBAL);
             break;
@@ -564,6 +552,7 @@ int compile_ast(astnode_t* root) {
             prog_add_num(p, c);
             prog_add_op(p, CONSTANT);
             break;
+
         case WIN:
             compile_ast(root->child[0]);
             prog_add_op(p, CONDBEGIN);
@@ -603,10 +592,39 @@ int compile_ast(astnode_t* root) {
             compile_ast(root->child[0]);
             prog_add_op(p, EQUAL);
             break;
+        case ANDGOAL:
+            compile_ast(root->child[1]);
+            compile_ast(root->child[0]);
+            prog_add_op(p, AND);
+            break;
+        case ORGOAL:
+            compile_ast(root->child[1]);
+            compile_ast(root->child[0]);
+            prog_add_op(p, OR);
+            break;
+        case NOTGOAL:
+            compile_ast(root->child[0]);
+            prog_add_op(p, NOT);
+            break;
         case TRAILS:
             compile_ast(root->child[1]);
             compile_ast(root->child[0]);
             prog_add_op(p, LESS);
+            break;
+        case LEADS:
+            compile_ast(root->child[1]);
+            compile_ast(root->child[0]);
+            prog_add_op(p, GREATER);
+            break;
+        case TRAILS_OR_TIES:
+            compile_ast(root->child[1]);
+            compile_ast(root->child[0]);
+            prog_add_op(p, LESSEQUAL);
+            break;
+        case LEADS_OR_TIES:
+            compile_ast(root->child[1]);
+            compile_ast(root->child[0]);
+            prog_add_op(p, GREATEREQUAL);
             break;
         case REMAINDER:
             compile_ast(root->child[1]);
@@ -721,7 +739,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Could not open file: %s\n", strerror(errno));
         return 1;
     }
-    int yylineno = 1;
+    //int yylineno = 1;
     int st = yyparse();
     prog_dump(p);
     if (st == 0) {

@@ -27,7 +27,7 @@ OPCODE(PRINTN) {
         val_t *v = POP;
         val_t *str = val_to_string(v);
         str = val_add(str, v_str_new_cstr(" "));
-        buf = val_add(str, buf);
+        buf = val_add(buf, str);
     }
     printf("%s\n", cstr(buf));
 }

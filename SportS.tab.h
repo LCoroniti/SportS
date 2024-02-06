@@ -63,50 +63,47 @@ extern int yydebug;
     FLOAT = 269,
     PLAYER = 270,
     SCORE = 271,
-    GOAL = 272,
-    TEAM = 273,
-    SET = 274,
-    CNTRL = 275,
-    ALLSTAR = 276,
-    AID = 277,
-    START_WHISTLE = 278,
-    END_WHISTLE = 279,
-    STRATEGY = 280,
-    PLAY = 281,
-    WIN = 282,
-    TIE = 283,
-    LOSE = 284,
-    PENALTY_SHOOTOUT = 285,
-    PRACTICE = 286,
-    ANNOUNCE = 287,
-    RESULT = 288,
-    TIMEOUT = 289,
-    SUBSTITUTE = 290,
-    INBOUNDS = 291,
-    OUTBOUNDS = 292,
-    LEADS = 293,
-    TRAILS = 294,
-    LEADS_OR_TIES = 295,
-    TRAILS_OR_TIES = 296,
-    SCORES = 297,
-    LOSES = 298,
-    MULTIPLIES = 299,
-    TACKLES = 300,
-    ANDGOAL = 301,
-    ORGOAL = 302,
-    NOTGOAL = 303,
-    REMAINDER = 304,
-    SETS = 305,
-    QUICK_PLAY = 306,
-    REFEREE = 307,
-    INJURY = 308,
-    USING = 309,
-    NUMBER = 310,
-    ID = 311,
-    COACH = 312,
-    BUY = 313,
-    IS = 314,
-    STRING = 315
+    TEAM = 272,
+    SET = 273,
+    CNTRL = 274,
+    ALLSTAR = 275,
+    AID = 276,
+    START_WHISTLE = 277,
+    END_WHISTLE = 278,
+    STRATEGY = 279,
+    PLAY = 280,
+    WIN = 281,
+    TIE = 282,
+    LOSE = 283,
+    PENALTY_SHOOTOUT = 284,
+    PRACTICE = 285,
+    ANNOUNCE = 286,
+    RESULT = 287,
+    TIMEOUT = 288,
+    SUBSTITUTE = 289,
+    INBOUNDS = 290,
+    OUTBOUNDS = 291,
+    LEADS = 292,
+    TRAILS = 293,
+    LEADS_OR_TIES = 294,
+    TRAILS_OR_TIES = 295,
+    SCORES = 296,
+    LOSES = 297,
+    MULTIPLIES = 298,
+    TACKLES = 299,
+    ANDGOAL = 300,
+    ORGOAL = 301,
+    NOTGOAL = 302,
+    REMAINDER = 303,
+    SETS = 304,
+    REFEREE = 305,
+    INJURY = 306,
+    USING = 307,
+    NUMBER = 308,
+    ID = 309,
+    COACH = 310,
+    IS = 311,
+    STRING = 312
   };
 #endif
 
@@ -116,13 +113,12 @@ union YYSTYPE
 {
 #line 42 "SportS.y"
 
-    int num;            // For numerical values
-    char* id;           // For identifiers
-    char* str;          // For string values
-    struct astnode* ast;     // For AST nodes
-    // Add other types as needed
+    int num;
+    char* id;
+    char* str;
+    struct astnode* ast;
 
-#line 126 "SportS.tab.h"
+#line 122 "SportS.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

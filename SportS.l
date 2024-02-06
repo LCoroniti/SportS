@@ -7,10 +7,7 @@
 ALLSTAR          "ALLSTAR"
 PLAYER           "PLAYER"
 SCORE            "SCORE"
-GOAL             "GOAL"
 TEAM             "TEAM"
-IN               "IN"
-OUT              "OUT"
 IS               "IS"
 START_WHISTLE    "START_WHISTLE"
 END_WHISTLE      "END_WHISTLE"
@@ -40,12 +37,10 @@ ORGOAL           "OR_GOAL"
 NOTGOAL          "NOT_GOAL"
 REMAINDER        "REMAINDER"
 SETS             "SETS"
-QUICK_PLAY       "QUICK_PLAY"
 REFEREE          "REFEREE"
 INJURY           "INJURY"
 USING            "USING"
 COACH            ";COACH"[^\n]*
-BUY              "BUY"
 NUMBER           [0-9]+
 AID              "*"[a-zA-Z_][a-zA-Z0-9_]*
 ID               [a-zA-Z_][a-zA-Z0-9_]*
@@ -56,10 +51,7 @@ STRING           \<[^\>]*\>
 {ALLSTAR}          { return ALLSTAR; }
 {PLAYER}           { return PLAYER; }
 {SCORE}            { return SCORE; }
-{GOAL}             { return GOAL; }
 {TEAM}             { return TEAM; }
-{IN}               { return IN; }
-{OUT}              { return OUT; }
 {IS}               { return IS; }
 {START_WHISTLE}    { return START_WHISTLE; }
 {END_WHISTLE}      { return END_WHISTLE; }
@@ -89,10 +81,8 @@ STRING           \<[^\>]*\>
 {NOTGOAL}          { return NOTGOAL; }
 {REMAINDER}        { return REMAINDER; }
 {SETS}             { return SETS; }
-{QUICK_PLAY}       { return QUICK_PLAY; }
 {REFEREE}          { return REFEREE; }
 {INJURY}           { return INJURY; }
-{BUY}              { return BUY; }
 {USING}            { return USING; }
 {COACH}            { }
 {NUMBER}           { yylval.num = atoi(yytext); return NUMBER; }
@@ -105,8 +95,7 @@ STRING           \<[^\>]*\>
                    }
 {AID}              { yylval.id = strdup(yytext); return AID; }
 {ID}               { yylval.id = strdup(yytext); return ID; }
-(\ |\r|\t)
-\n                { yylineno++; }
+(\ |\n|\r|\t)      { }
 .                 {
                     return yytext[0];
                   }

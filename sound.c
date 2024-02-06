@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <windows.h>
 #include <mmsystem.h>
+#include "sound.h"
 
-int main() {
+void whistle() {
     PlaySound(TEXT("whistle.wav"), NULL, SND_FILENAME);
-    return 0;
 }
