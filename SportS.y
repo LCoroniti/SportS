@@ -476,7 +476,7 @@ int compile_ast(astnode_t* root) {
             break;
         case array_is:
             nrparams = 0;
-            if (root->child[2] != NULL) {
+            if (root->child[2] != NULL && root->child[2]->child[1] != NULL) {
                 nrparams = compile_ast(root->child[2])+1;
             }
             prog_add_num(p, nrparams);
@@ -541,6 +541,7 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, CONDBEGIN);
             compile_ast(root->child[2]);
             prog_add_op(p, CONDELSE);
+            prog_add_op(p, CONDEND);
             break;
         case LOSE:
             compile_ast(root->child[0]);

@@ -2,7 +2,6 @@
 STRATEGY RandomOperator USING | |
 START_WHISTLE
     PLAYER operator IS PLAY random USING | 4 |
-    ANNOUNCE | <Operator: > operator |
     WIN operator INBOUNDS 0
     START_WHISTLE
         operator IS <SCORES>
@@ -26,25 +25,18 @@ STRATEGY GenerateArithmeticTerm USING | termLength maxNumber |
 START_WHISTLE
     SCORE rand IS PLAY random USING | maxNumber |
     TEAM term IS | rand |
-    ANNOUNCE | <Term: > term |
     SCORE i IS 1
     PENALTY_SHOOTOUT i TRAILS termLength
     START_WHISTLE
         PLAYER operator IS PLAY RandomOperator USING | |
-        ANNOUNCE | <op2: > operator |
         term # i IS operator
-        ANNOUNCE | <Term: > term |
 
         i IS i SCORES 1
-        PLAYER number IS PLAY random USING | 10 |
-        ANNOUNCE | <number: > number |
+        PLAYER number IS PLAY random USING | maxNumber |
         term # i IS number
-        ANNOUNCE | <Term: > term |
 
         i IS i SCORES 1
-        ANNOUNCE | <i: > i |
     END_WHISTLE
-    ANNOUNCE | <Term: > term |
 RESULT term
 END_WHISTLE
 
@@ -84,8 +76,7 @@ START_WHISTLE
     ANNOUNCE | <Solve this term: > arithmeticTerm |
     PLAYER userGuess IS PLAY getint USING | |
     PLAYER correctAnswer IS PLAY calculate USING |arithmeticTerm |
-    GOAL correct IS correctAnswer INBOUNDS userGuess
-    WIN correct
+    WIN correctAnswer INBOUNDS userGuess
     START_WHISTLE
         ANNOUNCE | <Correct!> |
     END_WHISTLE
@@ -108,4 +99,20 @@ START_WHISTLE
 RESULT
 END_WHISTLE
 
-PLAY MainGame USING | 3 10 |
+ANNOUNCE | <Welcome to the game!> |
+ANNOUNCE | <How long do you want the terms to be?> |
+PLAYER termLength IS PLAY getint USING | |
+ANNOUNCE | <What is the maximum number you want to use?> |
+PLAYER maxNumber IS PLAY getint USING | |
+WIN termLength TRAILS_OR_TIES 0
+START_WHISTLE
+    ANNOUNCE | <The term length must be a positive number!> |
+END_WHISTLE
+TIE maxNumber TRAILS_OR_TIES 0
+START_WHISTLE
+    ANNOUNCE | <The maximum number must be a positive number!> |
+END_WHISTLE
+LOSE
+START_WHISTLE
+    PLAY MainGame USING | termLength maxNumber |
+END_WHISTLE
