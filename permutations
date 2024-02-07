@@ -23,12 +23,20 @@ STRATEGY MainProgram USING | |
 START_WHISTLE
     ANNOUNCE | <How many numbers do you want to permute?> |
     SCORE amount IS PLAY getint USING | |
+    WIN amount TRAILS_OR_TIES 0
+    START_WHISTLE
+        ANNOUNCE | <Invalid Input! Please enter a positive integer.> |
+    END_WHISTLE
     TEAM numberList IS | |
     SCORE i IS 0
     PENALTY_SHOOTOUT i TRAILS amount
     START_WHISTLE
         ANNOUNCE | <Enter number> i SCORES 1 |
         SCORE number IS PLAY getint USING | |
+        WIN number TRAILS_OR_TIES 0
+        START_WHISTLE
+            ANNOUNCE | <Invalid Input! Please enter a positive integer.> |
+        END_WHISTLE
         numberList # i IS number
         i IS i SCORES 1
     END_WHISTLE

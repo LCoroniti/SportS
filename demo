@@ -9,66 +9,68 @@ ALLSTAR *b IS 20  ;COACH provoke error
 STRATEGY demo USING | x y |
 START_WHISTLE
 
-;COACH variable definition:
-SCORE a IS 1
-SCORE b IS 2:7
-PLAYER c IS <Hello World! >
+    ;COACH variable definition:
+    SCORE a IS 1
+    SCORE b IS 2:7
+    PLAYER c IS <Hello World!>
 
-;COACH arithmetic operations:
-b IS c SCORES b
-ANNOUNCE | b |
-b IS c REMAINDER 2
-ANNOUNCE | b |
-zero IS 0
-;COACH b IS a TACKLES zero ;COACH provoke error
+    ;COACH arithmetic operations:
+    b IS b LOSES a
+    ANNOUNCE | b |
+    b IS c SCORES b
+    ANNOUNCE | b |
+    b IS c REMAINDER 2
+    ANNOUNCE | b |
+    SCORE modulo IS 5 REMAINDER 2
+    ANNOUNCE | modulo |
+    a IS a MULTIPLIES 1:1  ;COACH Increase a by 10%
+    ANNOUNCE | a |
+    zero IS 0
+    ;COACH b IS a TACKLES zero ;COACH provoke error
 
-SCORE modulo IS 5 REMAINDER 2
-ANNOUNCE | modulo |
-a IS a MULTIPLIES 1:1  ;COACH Increase a by 10%
-ANNOUNCE | a |
 
-;COACH array definition and index assignment:
-TEAM d IS | 3 4 5 |
-ANNOUNCE | d |
-d # 3 IS 6  ;COACH Adding a value
-ANNOUNCE | d d # 4 |
+    ;COACH array definition and index assignment:
+    TEAM d IS | 3 4 5 |
+    ANNOUNCE | d |
+    d # 3 IS 6  ;COACH Adding a value
+    ANNOUNCE | d d # 3 |
 
-;COACH conditional logic with WIN, TIE, and LOSE:
-WIN x TRAILS 2
-START_WHISTLE
-    ANNOUNCE | <x TRAILS 2> |
-END_WHISTLE
-TIE y TRAILS_OR_TIES 3
-START_WHISTLE
-    ANNOUNCE | < y TRAILS_OR_TIES 3 > |
-END_WHISTLE
-LOSE
-START_WHISTLE
+    ;COACH conditional logic with WIN, TIE, and LOSE:
+    WIN x TRAILS 2
+    START_WHISTLE
+        ANNOUNCE | <x TRAILS 2> |
+    END_WHISTLE
+    TIE y TRAILS_OR_TIES 3
+    START_WHISTLE
+        ANNOUNCE | < y TRAILS_OR_TIES 3 > |
+    END_WHISTLE
+    LOSE
+    START_WHISTLE
 
-    ANNOUNCE | c |
-END_WHISTLE
+        ANNOUNCE | c |
+    END_WHISTLE
 
-;COACH loop with PENALTY_SHOOTOUT and array usage:
-size IS PLAY SIZE USING | d |
-ANNOUNCE | size |
-i IS 0
-PENALTY_SHOOTOUT i TRAILS size
-START_WHISTLE
-    *a IS *a SCORES 1
-    i IS i SCORES 1
-END_WHISTLE
-ANNOUNCE | *a |
+    ;COACH loop with PENALTY_SHOOTOUT and array usage:
+    size IS PLAY SIZE USING | d |
+    ANNOUNCE | size |
+    i IS 0
+    PENALTY_SHOOTOUT i TRAILS size
+    START_WHISTLE
+        *a IS *a SCORES 1
+        i IS i SCORES 1
+    END_WHISTLE
+    ANNOUNCE | *a |
 
-;COACH logical operations:
-WIN b LEADS a AND_GOAL a TRAILS *a
-START_WHISTLE
-    ANNOUNCE | b < LEADS > a < AND_GOAL > a < TRAILS > *a  |
-END_WHISTLE
+    ;COACH logical operations:
+    WIN 3 LEADS a AND_GOAL a TRAILS *a
+    START_WHISTLE
+        ANNOUNCE | 3 <LEADS> a <AND_GOAL> a <TRAILS> *a  |
+    END_WHISTLE
 
-;COACH SUBSTITUTE:
-ANNOUNCE | d |
-SUBSTITUTE d # 0 - d # 2  ;COACH Swap first and third value
-ANNOUNCE | d |
+    ;COACH SUBSTITUTE:
+    ANNOUNCE | d |
+    SUBSTITUTE d # 0 - d # 2  ;COACH Swap first and third value
+    ANNOUNCE | d |
 
 RESULT *a
 END_WHISTLE

@@ -86,7 +86,7 @@ START_WHISTLE
         ANNOUNCE | <Wrong! The correct answer is: > correctAnswer |
     END_WHISTLE
 
-    ANNOUNCE | <Do you want to try another one? (IN/OUT)> |
+    ANNOUNCE | <Do you want to try another one? Type "IN"> |
     PLAYER userChoice IS PLAY getstring USING | |
     WIN userChoice INBOUNDS <IN>
     START_WHISTLE
