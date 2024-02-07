@@ -1,6 +1,4 @@
 ;COACH this is the SportS language demo
-;COACH here are all functionalities listed
-
 
 ;COACH global definition:
 ALLSTAR SCORE *a IS 10
@@ -22,8 +20,7 @@ ANNOUNCE | b |
 b IS c REMAINDER 2
 ANNOUNCE | b |
 zero IS 0
-;COACH b IS a TACKLES zero
-
+;COACH b IS a TACKLES zero ;COACH provoke error
 
 SCORE modulo IS 5 REMAINDER 2
 ANNOUNCE | modulo |
@@ -34,12 +31,12 @@ ANNOUNCE | a |
 TEAM d IS | 3 4 5 |
 ANNOUNCE | d |
 d # 3 IS 6  ;COACH Adding a value
-ANNOUNCE | d d # 3 |
+ANNOUNCE | d d # 4 |
 
 ;COACH conditional logic with WIN, TIE, and LOSE:
 WIN x TRAILS 2
 START_WHISTLE
-    ANNOUNCE | <a TRAILS 2> |
+    ANNOUNCE | <x TRAILS 2> |
 END_WHISTLE
 TIE y TRAILS_OR_TIES 3
 START_WHISTLE

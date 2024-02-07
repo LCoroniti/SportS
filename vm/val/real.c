@@ -40,7 +40,7 @@ int v_real_cmp (val_t *v1, val_t *v2) {
 }
 
 int v_real_to_bool (val_t *v) {
-  return v->u.real == 0.0;
+  return v->u.real != 0.0;
 }
 
 val_t *v_real_to_string (val_t *real) {

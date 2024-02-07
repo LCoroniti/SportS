@@ -1,0 +1,9 @@
+;COACH Hello World!
+
+STRATEGY hello_world USING | name |
+START_WHISTLE
+    ANNOUNCE | <Hello,> name|
+RESULT
+END_WHISTLE
+
+PLAY hello_world USING | <Laura> |

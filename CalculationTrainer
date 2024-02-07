@@ -63,6 +63,7 @@ START_WHISTLE
         END_WHISTLE
         TIE operator INBOUNDS <TACKLES>
         START_WHISTLE
+            result IS result SCORES 0:0 ;COACH if you delete this line you will just have whole numbers
             result IS result TACKLES number
         END_WHISTLE
         i IS i SCORES 2
@@ -100,6 +101,9 @@ RESULT
 END_WHISTLE
 
 ANNOUNCE | <Welcome to the game!> |
+ANNOUNCE | <This game will generate a random arithmetic term and you have to solve it.> |
+ANNOUNCE | <You can choose the length of the term and the maximum number to use.> |
+ANNOUNCE | <Precedence is not considered.> |
 ANNOUNCE | <How long do you want the terms to be?> |
 PLAYER termLength IS PLAY getint USING | |
 ANNOUNCE | <What is the maximum number you want to use?> |
