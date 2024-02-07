@@ -1,135 +1,82 @@
 ;COACH this is the SportS language demo
 ;COACH here are all functionalities listed
 
+
 ;COACH global definition:
-ALLSTAR SCORE *a IS 1
-ALLSTAR *b IS 2
-*c IS 3
+ALLSTAR SCORE *a IS 10
+ALLSTAR *b IS 20  ;COACH provoke error
+*c IS 30
 
 ;COACH function definition:
-STRATEGY demo USING | a b |
+STRATEGY demo USING | x y |
 START_WHISTLE
 
 ;COACH variable definition:
-SCORE totalGames IS 10
-PLAYER mostValuablePlayer IS <Jordan>
-SCORE highestScore IS 33:7
+SCORE a IS 1
+SCORE b IS 2:7
+PLAYER c IS <Hello World! >
+
+;COACH arithmetic operations:
+b IS c SCORES b
+ANNOUNCE | b |
+b IS c REMAINDER 2
+ANNOUNCE | b |
+zero IS 0
+;COACH b IS a TACKLES zero
+
+
+SCORE modulo IS 5 REMAINDER 2
+ANNOUNCE | modulo |
+a IS a MULTIPLIES 1:1  ;COACH Increase a by 10%
+ANNOUNCE | a |
 
 ;COACH array definition and index assignment:
-TEAM points IS | 25 30 28 |
-points # 3 IS 32  ;COACH Adding a new score
+TEAM d IS | 3 4 5 |
+ANNOUNCE | d |
+d # 3 IS 6  ;COACH Adding a value
+ANNOUNCE | d d # 3 |
 
 ;COACH conditional logic with WIN, TIE, and LOSE:
-WIN a TRAILS 1990
+WIN x TRAILS 2
 START_WHISTLE
-    ANNOUNCE | <Retro Season> |
+    ANNOUNCE | <a TRAILS 2> |
 END_WHISTLE
-TIE b TRAILS_OR_TIES 2023
+TIE y TRAILS_OR_TIES 3
 START_WHISTLE
-    ANNOUNCE | <Modern Era> |
+    ANNOUNCE | < y TRAILS_OR_TIES 3 > |
 END_WHISTLE
 LOSE
 START_WHISTLE
-    ANNOUNCE | <Future Prospects> |
+
+    ANNOUNCE | c |
 END_WHISTLE
 
 ;COACH loop with PENALTY_SHOOTOUT and array usage:
-SCORE i IS 0
-PENALTY_SHOOTOUT i TRAILS PLAY SIZE USING | points |
+size IS PLAY SIZE USING | d |
+ANNOUNCE | size |
+i IS 0
+PENALTY_SHOOTOUT i TRAILS size
 START_WHISTLE
-    totalGames IS totalGames SCORES points # *a
     *a IS *a SCORES 1
     i IS i SCORES 1
 END_WHISTLE
+ANNOUNCE | *a |
 
 ;COACH logical operations:
-WIN a TACKLES b AND_GOAL a
+WIN b LEADS a AND_GOAL a TRAILS *a
 START_WHISTLE
-    mostValuablePlayer IS <All Star of the Decade>
+    ANNOUNCE | b < LEADS > a < AND_GOAL > a < TRAILS > *a  |
 END_WHISTLE
 
-;COACH arithmetic operations:
-SCORE bonusPoints IS 5 REMAINDER 2
-highestScore IS highestScore MULTIPLIES 1:1  ;COACH Increase highest score by 10%
-
-;COACH special usage of SUBSTITUTE and SIZE:
-ANNOUNCE | points |
-SUBSTITUTE points # 0 - points # 2  ;COACH Swap first and third points
-ANNOUNCE | points |
-
-SCORE seasonLength IS PLAY SIZE USING | points |
-ANNOUNCE | <Season Length: > seasonLength |
-
+;COACH SUBSTITUTE:
+ANNOUNCE | d |
+SUBSTITUTE d # 0 - d # 2  ;COACH Swap first and third value
+ANNOUNCE | d |
 
 RESULT *a
 END_WHISTLE
 
 ;COACH function call:
-a IS PLAY demo USING | 4 5 |
+a IS PLAY demo USING | 3 4:0 |
 
-ANNOUNCE |  a <End of Game> |
-
-
-;COACH This is the SportS language demo showcasing all functionalities.
-
-;COACH Global definition of season parameters:
-ALLSTAR SCORE *seasonStart IS 1990
-ALLSTAR SCORE *currentYear IS 2024
-
-;COACH Function definition for evaluating a sports season:
-STRATEGY evaluateSeason USING | year |
-START_WHISTLE
-
-    ;COACH Variable definition for season analysis:
-    SCORE totalGames IS 82
-    PLAYER mostValuablePlayer IS <Jordan>
-    GOAL highestScore IS 33.7  ;COACH Average highest score in a game as a float
-
-    ;COACH Array definition and index assignment for points scored in last 3 games:
-    TEAM points IS | 25, 30, 28 |
-    points #3 IS 32  ;COACH Adding a new score for the most recent game
-
-    ;COACH Conditional logic to categorize the season based on the year:
-    WIN year TRAILS 2000
-    START_WHISTLE
-        ANNOUNCE | <Retro Season: Celebrating Classics> |
-    END_WHISTLE
-    TIE year TRAILS_OR_TIES currentYear
-    START_WHISTLE
-        ANNOUNCE | <Modern Era: Current Legends> |
-    END_WHISTLE
-    LOSE
-    START_WHISTLE
-        ANNOUNCE | <Future Prospects: Upcoming Talents> |
-    END_WHISTLE
-
-    ;COACH Loop through points array to calculate total points in the season:
-    SCORE i IS 0
-    PENALTY_SHOOTOUT i TRAILS PLAY SIZE USING | points |
-    START_WHISTLE
-        ANNOUNCE | points # i |
-        i IS i SCORES 1
-    END_WHISTLE
-
-    ;COACH Determine Most Valuable Player based on conditional logic:
-    WIN year EQUALS 1996
-    START_WHISTLE
-        mostValuablePlayer IS <Jordan: All Star of the Decade>
-    END_WHISTLE
-
-    ;COACH Arithmetic operations to adjust the highest score and calculate bonus:
-    GOAL scoreAdjustment IS 1.1  ;COACH 10% Increase
-    highestScore IS highestScore MULTIPLIES scoreAdjustment
-    SCORE bonusPoints IS totalGames REMAINDER 5
-
-    ;COACH Special usage of SUBSTITUTE and SIZE for season analysis:
-    SUBSTITUTE points #0 - points #2  ;COACH Swap first and last game points for analysis
-    SCORE seasonLength IS PLAY SIZE USING | points |
-    ANNOUNCE | <Season Length: >, seasonLength, < games> |
-
-RESULT seasonStart
-END_WHISTLE
-
-;COACH Evaluating the 1996 season:
-seasonStart IS PLAY evaluateSeason USING | 1996 |
-ANNOUNCE | <Evaluation Complete for Season Start Year: >, seasonStart |
+ANNOUNCE |  <End of Game> a |

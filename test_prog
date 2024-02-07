@@ -1,8 +1,24 @@
 STRATEGY test USING | |
 START_WHISTLE
-    a IS 4:3
-
-    ANNOUNCE | <a:> a |
+    a IS 3
+    zero IS 0
+    WIN a TRAILS_OR_TIES zero
+    START_WHISTLE
+        a IS a PLUS 1
+        ANNOUNCE | a < not positive number> |
+    END_WHISTLE
+    TIE a TRAILS 3
+        START_WHISTLE
+            ANNOUNCE | a < is smaller than 3> |
+        END_WHISTLE
+    TIE a TRAILS 4
+        START_WHISTLE
+            ANNOUNCE | a < is smaller than 4> |
+        END_WHISTLE
+    LOSE
+    START_WHISTLE
+        ANNOUNCE | a < is greater or equal to  4> |
+    END_WHISTLE
 
 RESULT
 END_WHISTLE

@@ -3,8 +3,13 @@
 STRATEGY hailstone USING |  |
 START_WHISTLE
     ANNOUNCE | <Enter start number for hailstone sequence: > |
-    //TODO: check if int
     number IS PLAY getint USING | |
+    WIN number TRAILS_OR_TIES 0
+    START_WHISTLE
+        ANNOUNCE | <Invalid Input! Please enter a positive integer.> |
+    END_WHISTLE
+    LOSE
+    START_WHISTLE
     SCORE stepCount IS 0
     PENALTY_SHOOTOUT number OUTBOUNDS 1
     START_WHISTLE
@@ -22,6 +27,7 @@ START_WHISTLE
     END_WHISTLE
     ANNOUNCE | number |
     ANNOUNCE | <Step Count: > stepCount |
+    END_WHISTLE
 RESULT
 END_WHISTLE
 

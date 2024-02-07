@@ -17,10 +17,8 @@ WIN              "WIN"
 TIE              "TIE"
 LOSE             "LOSE"
 PENALTY_SHOOTOUT "PENALTY_SHOOTOUT"
-PRACTICE         "PRACTICE"
 ANNOUNCE         "ANNOUNCE"
 RESULT           "RESULT"
-TIMEOUT          "TIMEOUT"
 SUBSTITUTE       "SUBSTITUTE"
 INBOUNDS         "INBOUNDS"
 OUTBOUNDS        "OUTBOUNDS"
@@ -36,9 +34,7 @@ ANDGOAL          "AND_GOAL"
 ORGOAL           "OR_GOAL"
 NOTGOAL          "NOT_GOAL"
 REMAINDER        "REMAINDER"
-SETS             "SETS"
 REFEREE          "REFEREE"
-INJURY           "INJURY"
 USING            "USING"
 COACH            ";COACH"[^\n]*
 NUMBER           [0-9]+
@@ -61,10 +57,8 @@ STRING           \<[^\>]*\>
 {TIE}              { return TIE; }
 {LOSE}             { return LOSE; }
 {PENALTY_SHOOTOUT} { return PENALTY_SHOOTOUT; }
-{PRACTICE}         { return PRACTICE; }
 {ANNOUNCE}         { return ANNOUNCE; }
 {RESULT}           { return RESULT; }
-{TIMEOUT}          { return TIMEOUT; }
 {SUBSTITUTE}       { return SUBSTITUTE; }
 {INBOUNDS}         { return INBOUNDS; }
 {OUTBOUNDS}        { return OUTBOUNDS; }
@@ -80,9 +74,6 @@ STRING           \<[^\>]*\>
 {ORGOAL}           { return ORGOAL; }
 {NOTGOAL}          { return NOTGOAL; }
 {REMAINDER}        { return REMAINDER; }
-{SETS}             { return SETS; }
-{REFEREE}          { return REFEREE; }
-{INJURY}           { return INJURY; }
 {USING}            { return USING; }
 {COACH}            { }
 {NUMBER}           { yylval.num = atoi(yytext); return NUMBER; }

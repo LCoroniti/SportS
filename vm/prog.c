@@ -218,6 +218,13 @@ OPCODE(modulo) {
   val_t *a1 = POP;
   val_t *a2 = POP;
   val_t *r = val_mod(a1, a2);
+  if(r->type == T_ERROR){
+      vmerror(E_ERR, exec, r->u.error.msg);
+      val_free(r);
+  }
+    if(r->type == T_UNDEF){
+        vmerror(E_WARN, exec, "Yellow Card - Undefined result from mod");
+    }
   PUSH(r);
 }
 

@@ -19,7 +19,7 @@ all: clean $(TARGETS)
 	bison --defines -t $^
 
 %.lex.c: %.l
-	flex -d -o $@ $^
+	flex -o $@ $^
 
 vm/libvm3.a:
 	make -C vm

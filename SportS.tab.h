@@ -76,34 +76,29 @@ extern int yydebug;
     TIE = 282,
     LOSE = 283,
     PENALTY_SHOOTOUT = 284,
-    PRACTICE = 285,
-    ANNOUNCE = 286,
-    RESULT = 287,
-    TIMEOUT = 288,
-    SUBSTITUTE = 289,
-    INBOUNDS = 290,
-    OUTBOUNDS = 291,
-    LEADS = 292,
-    TRAILS = 293,
-    LEADS_OR_TIES = 294,
-    TRAILS_OR_TIES = 295,
-    SCORES = 296,
-    LOSES = 297,
-    MULTIPLIES = 298,
-    TACKLES = 299,
-    ANDGOAL = 300,
-    ORGOAL = 301,
-    NOTGOAL = 302,
-    REMAINDER = 303,
-    SETS = 304,
-    REFEREE = 305,
-    INJURY = 306,
-    USING = 307,
-    NUMBER = 308,
-    ID = 309,
-    COACH = 310,
-    IS = 311,
-    STRING = 312
+    ANNOUNCE = 285,
+    RESULT = 286,
+    SUBSTITUTE = 287,
+    USING = 288,
+    INBOUNDS = 289,
+    OUTBOUNDS = 290,
+    LEADS = 291,
+    TRAILS = 292,
+    LEADS_OR_TIES = 293,
+    TRAILS_OR_TIES = 294,
+    SCORES = 295,
+    LOSES = 296,
+    MULTIPLIES = 297,
+    TACKLES = 298,
+    ANDGOAL = 299,
+    ORGOAL = 300,
+    NOTGOAL = 301,
+    REMAINDER = 302,
+    NUMBER = 303,
+    ID = 304,
+    COACH = 305,
+    IS = 306,
+    STRING = 307
   };
 #endif
 
@@ -111,14 +106,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 42 "SportS.y"
+#line 38 "SportS.y"
 
     int num;
     char* id;
     char* str;
     struct astnode* ast;
 
-#line 122 "SportS.tab.h"
+#line 117 "SportS.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

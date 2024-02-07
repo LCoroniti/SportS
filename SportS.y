@@ -5,9 +5,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include "vm/vm.h"
-#include "sound.h"
-
-
 
 extern int yylineno;
 extern FILE *yyin;
@@ -34,7 +31,6 @@ void optimize_ast(astnode_t* node);
 int compile_ast(astnode_t* root);
 void print_ast_dot(astnode_t* node, int depth);
 void print_ast(astnode_t* node, int level);
-void whistle();
 %}
 
 %define parse.error verbose
@@ -55,17 +51,14 @@ void whistle();
 %token <str> function val param_def param_call assign_member array_is array_member expr_list
 %token <str> IN OUT PROGRAM FLOAT PLAYER SCORE TEAM SET CNTRL ALLSTAR AID
 %token <str> START_WHISTLE END_WHISTLE STRATEGY PLAY WIN TIE LOSE
-%token <str> PENALTY_SHOOTOUT PRACTICE ANNOUNCE RESULT TIMEOUT SUBSTITUTE
+%token <str> PENALTY_SHOOTOUT ANNOUNCE RESULT SUBSTITUTE USING
 %token <str> INBOUNDS OUTBOUNDS LEADS TRAILS LEADS_OR_TIES TRAILS_OR_TIES
 %token <str> SCORES LOSES MULTIPLIES TACKLES ANDGOAL ORGOAL NOTGOAL REMAINDER
-%token <str> SETS REFEREE INJURY USING
 %token <num> NUMBER
 %token <str> ID COACH IS STRING
-//%token <str> FOUL OFFSIDE
 
-//TODO: is this right?
+
 // Define operator precedence and associativity here
-
 %left ANDGOAL ORGOAL
 %left SCORES LOSES
 %left MULTIPLIES TACKLES
@@ -74,19 +67,13 @@ void whistle();
 %start start
 
 %%
-//TODO: as an extra add sounds (is this even possible?) would support the sport theme
-
-//TODO: include break (TIMEOUT) and continue (*name needed*) statements
-
-
-
 start:
     program {
                 //TODO: add sound
                 //whistle();
                 optimize_ast($1);
                 compile_ast($1);
-                print_ast($1, 0);
+                //print_ast($1, 0);
                 print_ast_dot($1, 0);
             }
 
@@ -106,6 +93,7 @@ statement:
     | swap_statement
     | function_call
     | condition
+
 
 
 global_definition:
@@ -215,16 +203,6 @@ id:
 
 float:
       number ':' number { $$ = create_node(FLOAT); $$->child[0] = $1; $$->child[1] = $3; }
-
-/*
-error:
-       %empty {$$ = NULL}
-     | error FOUL
-     | error OFFSIDE
-     | error HANDBALL
-     ;
-*/
-
 
 %%
 
@@ -428,15 +406,12 @@ void print_ast(astnode_t* node, int level) {
     }
 }
 
-//TODO: handle all AST nodes
+
 int compile_ast(astnode_t* root) {
-    int c, nrparams, jmp, pc, jt;
+    int c, nrparams, jmp;
     struct var *v;
 
-
     if (root == NULL) return 0;
-    printf("Node Type: %s\n", get_node_type_name(root->type));
-
     switch (root->type) {
         case PROGRAM:
             compile_ast(root->child[0]);
@@ -503,7 +478,6 @@ int compile_ast(astnode_t* root) {
             nrparams = 0;
             if (root->child[2] != NULL) {
                 nrparams = compile_ast(root->child[2])+1;
-                printf("nrparams: %d\n", nrparams);
             }
             prog_add_num(p, nrparams);
             prog_add_op(p, MKARRAY);
@@ -567,13 +541,10 @@ int compile_ast(astnode_t* root) {
             prog_add_op(p, CONDBEGIN);
             compile_ast(root->child[2]);
             prog_add_op(p, CONDELSE);
-            prog_add_op(p, CONDEND);
             break;
         case LOSE:
             compile_ast(root->child[0]);
-            prog_add_op(p, CONDELSE);
             compile_ast(root->child[1]);
-            prog_add_op(p, CONDEND);
             break;
         case PENALTY_SHOOTOUT:
             prog_add_op(p, LOOPBEGIN);
@@ -741,18 +712,18 @@ int main(int argc, char **argv) {
     }
     //int yylineno = 1;
     int st = yyparse();
-    prog_dump(p);
-    if (st == 0) {
+    //prog_dump(p);
+    /*if (st == 0) {
         printf("Parse successful!\n");
     } else {
         printf("Parse failed!\n");
-    }
+    }*/
 
     char bytecode[1000];
     snprintf(bytecode, 1000, "%s.vm3", argv[1]);
     prog_write(p, bytecode);
     exec_t *e = exec_new(p);
-    exec_set_debuglvl(e, E_DEBUG2);
+    //exec_set_debuglvl(e, E_DEBUG2);
     exec_run(e);
 
     return st;
